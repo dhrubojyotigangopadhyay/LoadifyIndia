@@ -1,82 +1,139 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Loadify India Basic</title>
+    <title>LOADIFY FINAL FIX</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
-        body { font-family: sans-serif; background: #eee; }
-        .hidden { display: none; }
-        #owner-view { display: flex; height: 95vh; gap: 10px; }
-        #sidebar { width: 200px; background: white; border: 1px solid #ccc; overflow-y: auto; }
-        #main-content { flex: 1; display: flex; flex-direction: column; gap: 10px; }
-        .row { display: flex; flex: 1; gap: 10px; }
-        .box { background: white; border: 1px solid #ccc; padding: 10px; flex: 1; position: relative; }
-        #map { height: 100%; width: 100%; background: #ddd; }
-        .col-25 { flex: 0 0 25%; }
-        .col-75 { flex: 0 0 75%; }
+        body { font-family: sans-serif; margin: 20px; background: #f0f0f0; }
+        section { background: white; padding: 20px; border: 2px solid #000; margin-bottom: 20px; }
+        button { padding: 15px; cursor: pointer; font-weight: bold; margin: 5px; }
+        .active { background: #4CAF50; color: white; }
+        #map { height: 300px; width: 100%; background: #ccc; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        td { border: 1px solid #ddd; padding: 10px; text-align: center; }
     </style>
 </head>
 <body>
 
-    <div id="gateway" style="text-align: center; margin-top: 100px;">
-        <h2>LOADIFY LOGIN</h2>
-        <input type="tel" id="login-phone" placeholder="Enter Mobile Number"><br><br>
-        <button onclick="setRole('owner')">I AM OWNER</button>
-        <button onclick="setRole('driver')">I AM DRIVER</button>
-        <p id="selected-role-text">Role: Not Selected</p>
-        <button id="access-btn" style="padding: 10px 20px; background: green; color: white;" onclick="appLogin()">ACCESS SYSTEM</button>
-    </div>
+    <h1>LOADIFY INDIA CONTROL</h1>
 
-    <div id="owner-view" class="hidden">
-        <div id="sidebar">
-            <h4 style="padding-left:10px">FLEET LIST</h4>
-            <hr>
-            <div id="fleet-list"></div>
-        </div>
-        <div id="main-content">
-            <div class="row">
-                <div class="box col-25">
-                    <b>LIVE POSITION</b>
-                    <div id="map"></div>
-                </div>
-                <div class="box col-75">
-                    <b>REAL-TIME DATA</b>
-                    <table width="100%" style="margin-top:20px; text-align: center;">
-                        <tr>
-                            <td><small>SPEED</small><h1 id="live-speed">0</h1></td>
-                            <td><small>SIGNAL</small><h2 id="live-signal">--</h2></td>
-                            <td><small>LAST PING</small><h2 id="live-time">--</h2></td>
-                        </tr>
-                    </table>
-                </div>
+    <section id="login-sec">
+        <h3>1. LOGIN</h3>
+        <input type="tel" id="num" placeholder="Mobile Number" style="padding:10px; width:200px;"><br><br>
+        <button id="btn-o" onclick="choose('owner')">I AM OWNER</button>
+        <button id="btn-d" onclick="choose('driver')">I AM DRIVER</button>
+        <br><br>
+        <button onclick="enter()" style="background:blue; color:white; width:220px;">ACCESS SYSTEM</button>
+    </section>
+
+    <section id="owner-sec" style="display:none;">
+        <h3>OWNER DASHBOARD</h3>
+        <div style="display:flex; gap:10px;">
+            <div style="width:200px; border-right:1px solid #000;">
+                <b>TRUCK LIST</b>
+                <div id="list"></div>
             </div>
-            <div class="row">
-                <div class="box">
-                    <b>SPEED TRENDS (24H)</b>
-                    <div id="graph-bars" style="display:flex; align-items:flex-end; height:150px; gap:5px; margin-top:20px;"></div>
-                </div>
-                <div class="box">
-                    <b>AI BUSINESS AUDIT</b><br><br>
-                    <select id="audit-range">
-                        <option value="1">24 Hours</option>
-                        <option value="7">7 Days</option>
-                        <option value="30">30 Days</option>
-                    </select>
-                    <button onclick="triggerDeepAudit()">GENERATE REPORT</button>
-                    <hr>
-                    <div id="ai-output" style="font-size: 12px; color: #444;">Select truck to analyze.</div>
-                </div>
+            <div style="flex:1;">
+                <div id="map"></div>
+                <table>
+                    <tr>
+                        <td>SPEED: <b id="sp">0</b></td>
+                        <td>SIGNAL: <b id="sg">--</b></td>
+                    </tr>
+                </table>
+                <hr>
+                <b>AI REPORT (0-30 DAYS)</b><br>
+                <select id="days"><option value="7">7 Days</option><option value="30">30 Days</option></select>
+                <button onclick="runAI()">GENERATE AI VERDICT</button>
+                <p id="ai-out" style="color:green; font-size:12px;"></p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div id="driver-view" class="hidden" style="text-align: center; margin-top: 100px;">
-        <h1 id="truck-id-display">WB26-X0606</h1>
-        <div id="gps-status" style="color: grey;">GPS: READY</div><br>
-        <button id="trip-btn" style="width:200px; height:200px; border-radius:50%; font-size: 20px;" onclick="handleTrip()">START TRIP</button>
-    </div>
+    <section id="driver-sec" style="display:none; text-align:center;">
+        <h3>DRIVER CONSOLE</h3>
+        <h2 id="tr-id">WB26-X0606</h2>
+        <button id="go" onclick="trip()" style="width:200px; height:200px; border-radius:50%; font-size:20px; background:green; color:white;">START TRIP</button>
+    </section>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="app.js"></script>
+    <script>
+        let role = "";
+        let tid = "";
+        const API = "https://loadifyindia.onrender.com";
+
+        // CHOOSE ROLE
+        function choose(r) {
+            role = r;
+            document.getElementById('btn-o').className = (r=='owner') ? 'active' : '';
+            document.getElementById('btn-d').className = (r=='driver') ? 'active' : '';
+        }
+
+        // LOGIN LOGIC
+        function enter() {
+            const p = document.getElementById('num').value;
+            if(!p || !role) { alert("Type Number and Pick Role!"); return; }
+
+            if(role == 'owner' && p == "9874076688") {
+                document.getElementById('login-sec').style.display = 'none';
+                document.getElementById('owner-sec').style.display = 'block';
+                loadFleet();
+            } else if(role == 'driver') {
+                document.getElementById('login-sec').style.display = 'none';
+                document.getElementById('driver-sec').style.display = 'block';
+            } else {
+                alert("Wrong Number for Owner");
+            }
+        }
+
+        // OWNER: LOAD DATA
+        async function loadFleet() {
+            const res = await fetch(API + "/dashboard");
+            const data = await res.json();
+            const div = document.getElementById('list');
+            div.innerHTML = "";
+            data.forEach(t => {
+                let b = document.createElement('button');
+                b.innerText = t.truck_id;
+                b.style.width = "100%";
+                b.onclick = () => {
+                    tid = t.truck_id;
+                    document.getElementById('sp').innerText = t.speed + " KM/H";
+                    document.getElementById('sg').innerText = t.signal;
+                    // Note: Map init would go here but keeping it basic to avoid crashes
+                    alert("Selected: " + tid);
+                };
+                div.appendChild(b);
+            });
+        }
+
+        // OWNER: AI
+        async function runAI() {
+            if(!tid) return alert("Pick truck first");
+            const d = document.getElementById('days').value;
+            document.getElementById('ai-out').innerText = "AI is thinking...";
+            const res = await fetch(API + "/generate-deep-report", {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ truck_id: tid, days: parseInt(d) })
+            });
+            const out = await res.json();
+            document.getElementById('ai-out').innerText = out.insight;
+        }
+
+        // DRIVER: TRIP
+        let active = false;
+        function trip() {
+            active = !active;
+            const b = document.getElementById('go');
+            if(active) {
+                b.innerText = "STOP TRIP";
+                b.style.background = "red";
+                // GPS Push Logic here
+            } else {
+                location.reload();
+            }
+        }
+    </script>
 </body>
 </html>
