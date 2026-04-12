@@ -17,27 +17,27 @@ const supabase = createClient(
 
 // 1. HEALTH CHECK
 app.get("/", (req, res) => {
-    res.send("Loadify India API v1.1 Live");
+    res.send("Loadify India API v1.2 Live | April 2026");
 });
 
-// --- FUTURE LOGIC PLACEHOLDERS (DO NOT REMOVE) ---
+// --- FUTURE LOGIC PLACEHOLDERS ---
 
-// 2. AUTH: SUPABASE MOBILE OTP (Placeholder for later activation)
+// 2. AUTH: SUPABASE MOBILE OTP
 app.post("/auth/otp", async (req, res) => {
     try {
         const { phone } = req.body;
-        // Logic for supabase.auth.signInWithOtp({ phone }) goes here
+        // logic for later: await supabase.auth.signInWithOtp({ phone })
         res.status(200).json({ success: true, message: "OTP pipeline ready" });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// 3. PAYMENT: UPI/RAZORPAY INTEGRATION (Placeholder for later activation)
+// 3. PAYMENT: UPI/RAZORPAY INTEGRATION
 app.post("/payment/create", async (req, res) => {
     try {
         const { amount, truck_id } = req.body;
-        // Logic for UPI intent or Razorpay Order ID goes here
+        // logic for later: create Razorpay order or UPI intent
         res.status(200).json({ success: true, order_id: "UPI_TEMP_12345" });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -120,7 +120,38 @@ app.get("/dashboard", async (req, res) => {
     }
 });
 
-// 8. ON-DEMAND AI INSIGHTS (GEMINI 1.5 FLASH)
+// 8. DYNAMIC DEEP AI REPORT (0-30 DAYS)
+app.post("/generate-deep-report", async (req, res) => {
+    try {
+        const { truck_id, days } = req.body;
+        const rangeDate = new Date();
+        rangeDate.setDate(rangeDate.getDate() - (parseInt(days) || 7));
+
+        const { data: logs, error } = await supabase.from("locations")
+            .select("lat, lng, speed, timestamp")
+            .eq("truck_id", truck_id)
+            .gte("timestamp", rangeDate.toISOString())
+            .order("timestamp", { ascending: false });
+
+        if (error) throw error;
+
+        const prompt = `You are Loadify AI Advisor. Analyze ${days} days of Indian truck logs for ${truck_id}: ${JSON.stringify(logs)}. 
+        Report on: 1. Dhaba/Border/RTO delays 2. Safety Grade (A-F) based on speed 3. Route Efficiency tips (like avoiding Panagarh traffic). 
+        Format: Bulleted, Professional Indian Business Style. Max 50 words. Current date: April 13, 2026.`;
+        
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            { contents: [{ parts: [{ text: prompt }] }] }
+        );
+        
+        const insight = response.data.candidates[0].content.parts[0].text;
+        res.json({ insight });
+    } catch (e) {
+        res.json({ insight: "AI is scanning logs. Please ensure tracking was active during this period." });
+    }
+});
+
+// 9. ON-DEMAND QUICK INSIGHT (TRUCK CARD VERSION)
 app.post("/generate-summary", async (req, res) => {
     try {
         const { truck_id } = req.body;
@@ -128,7 +159,7 @@ app.post("/generate-summary", async (req, res) => {
             .select("lat, lng, speed, timestamp")
             .eq("truck_id", truck_id)
             .order("timestamp", { ascending: false })
-            .limit(20); // Analyzing last 20 points for patterns
+            .limit(20);
 
         const prompt = `You are Loadify AI Advisor. Analyze this movement data for Truck ${truck_id}: ${JSON.stringify(data)}. 
         Provide a 12-word professional status report on route efficiency and driver behavior.`;
