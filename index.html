@@ -1,64 +1,79 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loadify India</title>
+    <title>Loadify India Basic</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body { font-family: sans-serif; background: #eee; }
+        .hidden { display: none; }
+        #owner-view { display: flex; height: 95vh; gap: 10px; }
+        #sidebar { width: 200px; background: white; border: 1px solid #ccc; overflow-y: auto; }
+        #main-content { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .row { display: flex; flex: 1; gap: 10px; }
+        .box { background: white; border: 1px solid #ccc; padding: 10px; flex: 1; position: relative; }
+        #map { height: 100%; width: 100%; background: #ddd; }
+        .col-25 { flex: 0 0 25%; }
+        .col-75 { flex: 0 0 75%; }
+    </style>
 </head>
 <body>
 
-    <div id="gateway">
-        <div class="login-box">
-            <h1>LOADIFY INDIA</h1>
-            
-            <input type="tel" id="login-phone" placeholder="Enter Mobile Number">
-
-            <div class="role-group">
-                <button id="btn-owner" onclick="selectRole('owner')">I AM OWNER</button>
-                <button id="btn-driver" onclick="selectRole('driver')">I AM DRIVER</button>
-            </div>
-
-            <button class="access-btn" onclick="appLogin()">ACCESS SYSTEM</button>
-            <p id="err-msg"></p>
-        </div>
+    <div id="gateway" style="text-align: center; margin-top: 100px;">
+        <h2>LOADIFY LOGIN</h2>
+        <input type="tel" id="login-phone" placeholder="Enter Mobile Number"><br><br>
+        <button onclick="setRole('owner')">I AM OWNER</button>
+        <button onclick="setRole('driver')">I AM DRIVER</button>
+        <p id="selected-role-text">Role: Not Selected</p>
+        <button id="access-btn" style="padding: 10px 20px; background: green; color: white;" onclick="appLogin()">ACCESS SYSTEM</button>
     </div>
 
-    <div id="owner-view" style="display:none">
+    <div id="owner-view" class="hidden">
         <div id="sidebar">
-            <img src="inverted-logo.svg" width="100">
+            <h4 style="padding-left:10px">FLEET LIST</h4>
+            <hr>
             <div id="fleet-list"></div>
         </div>
-        <div id="main-dashboard">
+        <div id="main-content">
             <div class="row">
-                <div id="map" class="panel"></div>
-                <div class="panel stats">
-                    <small>LIVE SPEED</small>
-                    <h2 id="live-speed">0 KM/H</h2>
-                    <hr>
-                    <small>SIGNAL</small>
-                    <h2 id="signal-health">--</h2>
+                <div class="box col-25">
+                    <b>LIVE POSITION</b>
+                    <div id="map"></div>
+                </div>
+                <div class="box col-75">
+                    <b>REAL-TIME DATA</b>
+                    <table width="100%" style="margin-top:20px; text-align: center;">
+                        <tr>
+                            <td><small>SPEED</small><h1 id="live-speed">0</h1></td>
+                            <td><small>SIGNAL</small><h2 id="live-signal">--</h2></td>
+                            <td><small>LAST PING</small><h2 id="live-time">--</h2></td>
+                        </tr>
+                    </table>
                 </div>
             </div>
             <div class="row">
-                <div class="panel ai-zone">
+                <div class="box">
+                    <b>SPEED TRENDS (24H)</b>
+                    <div id="graph-bars" style="display:flex; align-items:flex-end; height:150px; gap:5px; margin-top:20px;"></div>
+                </div>
+                <div class="box">
+                    <b>AI BUSINESS AUDIT</b><br><br>
                     <select id="audit-range">
-                        <option value="7">7 Days Report</option>
-                        <option value="30">30 Days Report</option>
+                        <option value="1">24 Hours</option>
+                        <option value="7">7 Days</option>
+                        <option value="30">30 Days</option>
                     </select>
-                    <button onclick="triggerDeepAudit()">GENERATE AI REPORT</button>
-                    <div id="ai-audit-output">Report will appear here...</div>
+                    <button onclick="triggerDeepAudit()">GENERATE REPORT</button>
+                    <hr>
+                    <div id="ai-output" style="font-size: 12px; color: #444;">Select truck to analyze.</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="driver-view" style="display:none">
-        <div class="driver-screen">
-            <h1 id="truck-display">WB26-X0606</h1>
-            <button id="trip-btn" onclick="handleTrip()">START TRIP</button>
-        </div>
+    <div id="driver-view" class="hidden" style="text-align: center; margin-top: 100px;">
+        <h1 id="truck-id-display">WB26-X0606</h1>
+        <div id="gps-status" style="color: grey;">GPS: READY</div><br>
+        <button id="trip-btn" style="width:200px; height:200px; border-radius:50%; font-size: 20px;" onclick="handleTrip()">START TRIP</button>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
