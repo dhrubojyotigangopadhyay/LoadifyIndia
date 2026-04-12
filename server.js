@@ -1,9 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const supabaseLib = require("@supabase/supabase-js");
+const { createClient } = require("@supabase/supabase-js");
 const axios = require("axios");
-
-const createClient = supabaseLib.createClient;
 
 const app = express();
 app.use(cors());
@@ -11,30 +9,107 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
+// Initialize Supabase
+// Ensure these match your Render/Railway Environment Variables exactly
 const supabase = createClient(
-process.env.SUPABASE_URL,
-process.env.SUPABASE_KEY,
-{
-auth: { persistSession: false }
-}
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_KEY
 );
 
+// Health Check
 app.get("/", (req, res) => {
-res.send("Loadify backend running");
+    res.send("Loadify Backend is Live");
 });
 
+// API 1: SEND LOCATION (MAIN API)
 app.post("/send-location", async (req, res) => {
-try {
-const { truck_id, lat, lng, speed } = req.body;
+    try {
+        const { truck_id, lat, lng, speed } = req.body;
 
-```
-if (!truck_id || lat === undefined || lng === undefined) {
-  return res.status(400).json({ error: "Missing data" });
-}
+        if (!truck_id || lat === undefined || lng === undefined) {
+            return res.status(400).json({ error: "Missing required tracking data" });
+        }
 
-const { error } = await supabase.from("locations").insert([
-  {
-    truck_id: String(truck_id),
+        const { error } = await supabase.from("locations").insert([
+            {
+                truck_id: String(truck_id),
+                lat: Number(lat),
+                lng: Number(lng),
+                speed: Number(speed || 0),
+                timestamp: new Date().toISOString()
+            }
+        ]);
+
+        if (error) throw error;
+
+        res.status(200).json({ success: true, message: "Location updated" });
+    } catch (e) {
+        console.error("SEND LOCATION ERROR:", e.message);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// API 2: DASHBOARD (FETCH LATEST FOR ALL TRUCKS)
+app.get("/dashboard", async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from("locations")
+            .select("*")
+            .order("timestamp", { ascending: false });
+
+        if (error) throw error;
+
+        // Logic to get only the latest row for each unique truck
+        const latestPositions = {};
+        data.forEach((row) => {
+            if (!latestPositions[row.truck_id]) {
+                latestPositions[row.truck_id] = {
+                    ...row,
+                    status: row.speed < 5 ? "Stopped" : "Moving"
+                };
+            }
+        });
+
+        res.json(Object.values(latestPositions));
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// API 3: GENERATE AI INSIGHTS (GEMINI)
+app.post("/generate-summary", async (req, res) => {
+    try {
+        const { truck_id } = req.body;
+
+        const { data, error } = await supabase
+            .from("locations")
+            .select("*")
+            .eq("truck_id", truck_id)
+            .order("timestamp", { ascending: false })
+            .limit(20);
+
+        if (error || !data.length) throw new Error("No data found for this truck");
+
+        const prompt = `Analyze this truck GPS data (lat, lng, speed). Provide a 1-sentence status report: ${JSON.stringify(data)}`;
+
+        const response = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+            {
+                contents: [{ parts: [{ text: prompt }] }]
+            }
+        );
+
+        const insight = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "No insight available";
+        res.json({ insight });
+    } catch (e) {
+        console.error("AI ERROR:", e.message);
+        res.json({ insight: "AI Analysis currently unavailable" });
+    }
+});
+
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});    truck_id: String(truck_id),
     lat: Number(lat),
     lng: Number(lng),
     speed: Number(speed || 0),
