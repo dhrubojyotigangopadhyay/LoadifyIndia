@@ -3,28 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loadify India | Fleet Dashboard</title>
+    <title>Loadify India | Intelligence Fleet</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="sidebar">
-        <div class="header">
-            <img src="inverted-logo.svg" alt="Loadify Logo" class="main-logo">
-            <p id="fleet-stat">Fleet Status: <span id="truck-count">0</span> Active</p>
-        </div>
-        
-        <div class="registration-box">
-            <input type="text" id="truck-no" placeholder="Truck No (e.g. WB23-5566)">
-            <input type="text" id="driver-ph" placeholder="Driver Phone">
-            <button onclick="registerTruck()">Add & Invite</button>
-        </div>
 
-        <div id="truck-list"></div>
+    <div id="login-gateway">
+        <div class="glass-card">
+            <img src="logo.svg" alt="Loadify" class="login-logo">
+            <h1>Intelligence Fleet Control</h1>
+            <p>Enter credentials to access Loadify Network</p>
+            <div class="input-group">
+                <input type="tel" id="user-phone" placeholder="+91 00000 00000">
+                <button onclick="handleGatewayLogin()">Enter System</button>
+            </div>
+            <p id="error-msg" class="error"></p>
+        </div>
     </div>
-    
-    <div id="map"></div>
+
+    <div id="owner-dashboard" style="display: none;">
+        <div id="sidebar">
+            <div class="sidebar-header">
+                <img src="inverted-logo.svg" alt="Loadify" class="dash-logo">
+                <div class="fleet-badge">Fleet: <span id="truck-count">0</span> Online</div>
+            </div>
+            <div id="truck-list" class="scroll-container">
+                </div>
+        </div>
+        <div id="map"></div>
+    </div>
+
+    <div id="driver-console" style="display: none;">
+        <div class="console-box">
+            <div class="console-header">
+                <img src="inverted-logo.svg" alt="Loadify" width="120">
+                <h3 id="driver-truck-id">WB26-X0606</h3>
+            </div>
+            <div id="trip-indicator" class="pulse-offline">System Idle</div>
+            <div class="button-container">
+                <button id="main-trip-btn" class="start-btn" onclick="toggleDriverTrip()">START TRIP</button>
+            </div>
+            <p class="warning-text">GPS tracking will continue while screen is locked.</p>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
