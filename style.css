@@ -1,28 +1,27 @@
-#main-dashboard { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #000; }
-.dashboard-row { display: flex; gap: 10px; flex: 1; }
+:root { --p: #4CAF50; --b: #000; --c: #111; }
+body { margin: 0; background: var(--b); color: #fff; font-family: sans-serif; overflow: hidden; }
 
-/* Grid Distribution */
+/* Dashboard Grid */
+#main-dashboard { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px; }
+.dashboard-row { display: flex; gap: 10px; flex: 1; min-height: 0; }
 .col-25 { flex: 0 0 25%; }
 .col-50 { flex: 0 0 50%; }
 .col-75 { flex: 0 0 75%; }
 
-.panel { background: #111; border: 1px solid #222; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
-.panel-header { font-size: 0.65rem; color: #4CAF50; font-weight: bold; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222; letter-spacing: 1px; }
+.panel { background: var(--c); border: 1px solid #222; border-radius: 8px; display: flex; flex-direction: column; }
+.panel-header { font-size: 10px; color: var(--p); font-weight: bold; padding: 10px; border-bottom: 1px solid #222; letter-spacing: 1px; }
 
-/* Telemetry Stats */
-.telemetry-grid { display: flex; height: 100%; align-items: center; justify-content: space-around; padding: 20px; }
-.stat-box { text-align: center; border-right: 1px solid #222; flex: 1; }
-.stat-box:last-child { border: none; }
-.stat-box small { color: #666; font-size: 0.7rem; }
-.stat-box h2 { font-size: 2.5rem; margin: 5px 0; color: #fff; }
-.unit { font-size: 0.8rem; color: #4CAF50; }
+/* Telemetry */
+.telemetry-grid { display: flex; height: 100%; align-items: center; justify-content: space-around; }
+.stat { text-align: center; }
+.stat small { color: #666; font-size: 10px; }
+.stat h2 { font-size: 40px; margin: 5px 0; }
 
-/* AI Console */
-.audit-controls { padding: 15px; background: #0a0a0a; display: flex; gap: 10px; }
-#audit-range { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 8px; border-radius: 4px; }
-.audit-btn { background: #4CAF50; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
-.audit-result { padding: 15px; font-size: 0.85rem; color: #aaa; line-height: 1.6; overflow-y: auto; }
+/* Audit & Graph */
+.audit-controls { padding: 10px; display: flex; gap: 10px; background: #0a0a0a; }
+.audit-result { padding: 15px; font-size: 13px; color: #aaa; line-height: 1.6; overflow-y: auto; }
+.graph-box { display: flex; align-items: flex-end; gap: 4px; padding: 20px; height: 100%; justify-content: center; }
+.bar { background: var(--p); width: 15px; border-radius: 2px 2px 0 0; }
 
-/* Simple Graph Placeholder */
-.graph-bar-container { display: flex; align-items: flex-end; gap: 5px; padding: 20px; height: 100%; justify-content: space-around; }
-.bar { background: #4CAF50; width: 20px; border-radius: 3px 3px 0 0; min-height: 5px; }
+#map { flex: 1; width: 100%; }
+#sidebar { width: 300px; background: var(--c); border-right: 1px solid #222; }
