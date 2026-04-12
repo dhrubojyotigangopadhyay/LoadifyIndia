@@ -21,11 +21,16 @@ res.send("Loadify backend running");
 app.post("/start-trip", async (req, res) => {
 try {
 const { truck_id } = req.body;
+
+```
 const { data } = await supabase
-.from("trips")
-.insert([{ truck_id, start_time: new Date() }])
-.select();
+  .from("trips")
+  .insert([{ truck_id, start_time: new Date() }])
+  .select();
+
 res.json(data);
+```
+
 } catch (e) {
 res.status(500).json({ error: "start trip failed" });
 }
@@ -34,10 +39,21 @@ res.status(500).json({ error: "start trip failed" });
 app.post("/send-location", async (req, res) => {
 try {
 const { truck_id, lat, lng, speed } = req.body;
+
+```
 await supabase.from("locations").insert([
-{ truck_id, lat, lng, speed, timestamp: new Date() }
+  {
+    truck_id,
+    lat,
+    lng,
+    speed,
+    timestamp: new Date()
+  }
 ]);
+
 res.json({ success: true });
+```
+
 } catch (e) {
 res.status(500).json({ error: "location failed" });
 }
@@ -46,11 +62,16 @@ res.status(500).json({ error: "location failed" });
 app.post("/end-trip", async (req, res) => {
 try {
 const { trip_id } = req.body;
+
+```
 await supabase
-.from("trips")
-.update({ end_time: new Date() })
-.eq("id", trip_id);
+  .from("trips")
+  .update({ end_time: new Date() })
+  .eq("id", trip_id);
+
 res.json({ success: true });
+```
+
 } catch (e) {
 res.status(500).json({ error: "end trip failed" });
 }
@@ -65,6 +86,7 @@ const { data } = await supabase
 
 ```
 const latest = {};
+
 data.forEach((row) => {
   if (!latest[row.truck_id]) {
     latest[row.truck_id] = row;
@@ -100,7 +122,9 @@ const { data } = await supabase
   .order("timestamp", { ascending: false })
   .limit(50);
 
-const prompt = `Analyze this trip data and give short insight: ${JSON.stringify(data)}`;
+const prompt =
+  "Analyze this trip data and give short insight: " +
+  JSON.stringify(data);
 
 const response = await axios.post(
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
@@ -121,4 +145,6 @@ res.json({ insight: "AI failed" });
 }
 });
 
-app.listen(PORT, () => console.log("Server running"));
+app.listen(PORT, () => {
+console.log("Server running");
+});
