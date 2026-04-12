@@ -1,7 +1,9 @@
 const express = require("express");
 const cors = require("cors");
-const { createClient } = require("@supabase/supabase-js");
+const supabaseLib = require("@supabase/supabase-js");
 const axios = require("axios");
+
+const createClient = supabaseLib.createClient;
 
 const app = express();
 app.use(cors());
@@ -13,9 +15,7 @@ const supabase = createClient(
 process.env.SUPABASE_URL,
 process.env.SUPABASE_KEY,
 {
-auth: {
-persistSession: false
-}
+auth: { persistSession: false }
 }
 );
 
@@ -32,7 +32,7 @@ if (!truck_id || lat === undefined || lng === undefined) {
   return res.status(400).json({ error: "Missing data" });
 }
 
-const { data, error } = await supabase.from("locations").insert([
+const { error } = await supabase.from("locations").insert([
   {
     truck_id: String(truck_id),
     lat: Number(lat),
@@ -48,7 +48,7 @@ res.json({ success: true });
 ```
 
 } catch (e) {
-console.log("ERROR:", e);
+console.log("SEND LOCATION ERROR:", e);
 res.status(500).json({ error: e.message });
 }
 });
@@ -84,7 +84,7 @@ res.json(result);
 ```
 
 } catch (e) {
-console.log(e);
+console.log("DASHBOARD ERROR:", e);
 res.status(500).json({ error: e.message });
 }
 });
@@ -122,7 +122,7 @@ res.json({ insight: text });
 ```
 
 } catch (e) {
-console.log(e);
+console.log("AI ERROR:", e);
 res.json({ insight: "AI failed" });
 }
 });
