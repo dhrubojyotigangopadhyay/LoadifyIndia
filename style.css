@@ -1,32 +1,28 @@
-:root { --primary: #4CAF50; --bg: #0a0a0a; --card: #161616; --text: #ffffff; }
-body { margin: 0; font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); overflow: hidden; }
+#main-dashboard { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 10px; background: #000; }
+.dashboard-row { display: flex; gap: 10px; flex: 1; }
 
-/* Login Gateway */
-#login-gateway { height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle, #1a1a1a 0%, #000 100%); }
-.glass-card { background: rgba(255,255,255,0.05); backdrop-filter: blur(10px); padding: 50px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 350px; }
-.login-logo { width: 180px; margin-bottom: 20px; }
-.input-group input { width: 100%; padding: 15px; margin: 20px 0; border-radius: 8px; border: 1px solid #333; background: #000; color: #fff; box-sizing: border-box;}
-.input-group button { width: 100%; padding: 15px; background: var(--primary); color: #000; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; }
+/* Grid Distribution */
+.col-25 { flex: 0 0 25%; }
+.col-50 { flex: 0 0 50%; }
+.col-75 { flex: 0 0 75%; }
 
-/* Dashboard UI */
-#owner-dashboard { display: flex; height: 100vh; }
-#sidebar { width: 380px; background: var(--card); border-right: 1px solid #222; display: flex; flex-direction: column; }
-.sidebar-header { padding: 25px; border-bottom: 1px solid #222; }
-.dash-logo { width: 140px; }
-.fleet-badge { background: #222; padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; margin-top: 15px; display: inline-block; color: var(--primary); }
+.panel { background: #111; border: 1px solid #222; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; }
+.panel-header { font-size: 0.65rem; color: #4CAF50; font-weight: bold; padding: 10px; background: #0a0a0a; border-bottom: 1px solid #222; letter-spacing: 1px; }
 
-/* Truck Cards */
-.truck-card { background: #1f1f1f; margin: 15px; padding: 20px; border-radius: 12px; border-left: 4px solid var(--primary); position: relative; }
-.ai-report-btn { background: transparent; border: 1px dashed var(--primary); color: var(--primary); padding: 8px; width: 100%; margin-top: 12px; cursor: pointer; border-radius: 5px; font-size: 0.75rem; }
-.ai-report-btn:hover { background: rgba(76, 175, 80, 0.1); }
+/* Telemetry Stats */
+.telemetry-grid { display: flex; height: 100%; align-items: center; justify-content: space-around; padding: 20px; }
+.stat-box { text-align: center; border-right: 1px solid #222; flex: 1; }
+.stat-box:last-child { border: none; }
+.stat-box small { color: #666; font-size: 0.7rem; }
+.stat-box h2 { font-size: 2.5rem; margin: 5px 0; color: #fff; }
+.unit { font-size: 0.8rem; color: #4CAF50; }
 
-/* Driver Console */
-#driver-console { height: 100vh; display: flex; align-items: center; justify-content: center; }
-.console-box { text-align: center; width: 80%; }
-.start-btn { width: 200px; height: 200px; border-radius: 50%; border: 8px solid #222; background: var(--primary); color: #000; font-size: 1.4rem; font-weight: bold; cursor: pointer; transition: 0.3s; }
-#trip-indicator { margin: 30px 0; font-weight: bold; font-size: 1.2rem; }
-.pulse-offline { color: #555; }
-.pulse-online { color: var(--primary); animation: blink 1s infinite; }
-@keyframes blink { 50% { opacity: 0.4; } }
+/* AI Console */
+.audit-controls { padding: 15px; background: #0a0a0a; display: flex; gap: 10px; }
+#audit-range { flex: 1; background: #000; border: 1px solid #333; color: #fff; padding: 8px; border-radius: 4px; }
+.audit-btn { background: #4CAF50; border: none; padding: 0 20px; font-weight: bold; cursor: pointer; border-radius: 4px; }
+.audit-result { padding: 15px; font-size: 0.85rem; color: #aaa; line-height: 1.6; overflow-y: auto; }
 
-#map { flex: 1; height: 100vh; }
+/* Simple Graph Placeholder */
+.graph-bar-container { display: flex; align-items: flex-end; gap: 5px; padding: 20px; height: 100%; justify-content: space-around; }
+.bar { background: #4CAF50; width: 20px; border-radius: 3px 3px 0 0; min-height: 5px; }
