@@ -3,20 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loadify | Owner Control Center</title>
+    <title>Loadify India | Fleet Dashboard</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="sidebar">
         <div class="header">
-            <h2>🚚 Loadify Live</h2>
-            <p>Fleet Status: <span id="truck-count">0</span> Active</p>
+            <img src="inverted-logo.svg" alt="Loadify Logo" class="main-logo">
+            <p id="fleet-stat">Fleet Status: <span id="truck-count">0</span> Active</p>
         </div>
         
-        <div id="truck-list">
-            <p class="loading-text">Syncing with trucks...</p>
+        <div class="registration-box">
+            <input type="text" id="truck-no" placeholder="Truck No (e.g. WB23-5566)">
+            <input type="text" id="driver-ph" placeholder="Driver Phone">
+            <button onclick="registerTruck()">Add & Invite</button>
         </div>
+
+        <div id="truck-list"></div>
     </div>
     
     <div id="map"></div>
