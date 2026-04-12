@@ -23,16 +23,19 @@ try {
 const { truck_id } = req.body;
 
 ```
-const { data } = await supabase
+const { data, error } = await supabase
   .from("trips")
   .insert([{ truck_id, start_time: new Date() }])
   .select();
+
+if (error) throw error;
 
 res.json(data);
 ```
 
 } catch (e) {
-res.status(500).json({ error: "start trip failed" });
+console.log(e);
+res.status(500).json({ error: e.message });
 }
 });
 
@@ -41,7 +44,7 @@ try {
 const { truck_id, lat, lng, speed } = req.body;
 
 ```
-await supabase.from("locations").insert([
+const { error } = await supabase.from("locations").insert([
   {
     truck_id,
     lat,
@@ -51,11 +54,14 @@ await supabase.from("locations").insert([
   }
 ]);
 
+if (error) throw error;
+
 res.json({ success: true });
 ```
 
 } catch (e) {
-res.status(500).json({ error: "location failed" });
+console.log(e);
+res.status(500).json({ error: e.message });
 }
 });
 
@@ -64,27 +70,32 @@ try {
 const { trip_id } = req.body;
 
 ```
-await supabase
+const { error } = await supabase
   .from("trips")
   .update({ end_time: new Date() })
   .eq("id", trip_id);
+
+if (error) throw error;
 
 res.json({ success: true });
 ```
 
 } catch (e) {
-res.status(500).json({ error: "end trip failed" });
+console.log(e);
+res.status(500).json({ error: e.message });
 }
 });
 
 app.get("/dashboard", async (req, res) => {
 try {
-const { data } = await supabase
+const { data, error } = await supabase
 .from("locations")
 .select("*")
 .order("timestamp", { ascending: false });
 
 ```
+if (error) throw error;
+
 const latest = {};
 
 data.forEach((row) => {
@@ -106,7 +117,8 @@ res.json(result);
 ```
 
 } catch (e) {
-res.status(500).json({ error: "dashboard failed" });
+console.log(e);
+res.status(500).json({ error: e.message });
 }
 });
 
@@ -115,12 +127,14 @@ try {
 const { truck_id } = req.body;
 
 ```
-const { data } = await supabase
+const { data, error } = await supabase
   .from("locations")
   .select("*")
   .eq("truck_id", truck_id)
   .order("timestamp", { ascending: false })
   .limit(50);
+
+if (error) throw error;
 
 const prompt =
   "Analyze this trip data and give short insight: " +
@@ -141,6 +155,7 @@ res.json({ insight: text });
 ```
 
 } catch (e) {
+console.log(e);
 res.json({ insight: "AI failed" });
 }
 });
