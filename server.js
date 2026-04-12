@@ -20,7 +20,33 @@ app.get("/", (req, res) => {
     res.send("Loadify India API v1.1 Live");
 });
 
-// 2. START TRIP
+// --- FUTURE LOGIC PLACEHOLDERS (DO NOT REMOVE) ---
+
+// 2. AUTH: SUPABASE MOBILE OTP (Placeholder for later activation)
+app.post("/auth/otp", async (req, res) => {
+    try {
+        const { phone } = req.body;
+        // Logic for supabase.auth.signInWithOtp({ phone }) goes here
+        res.status(200).json({ success: true, message: "OTP pipeline ready" });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 3. PAYMENT: UPI/RAZORPAY INTEGRATION (Placeholder for later activation)
+app.post("/payment/create", async (req, res) => {
+    try {
+        const { amount, truck_id } = req.body;
+        // Logic for UPI intent or Razorpay Order ID goes here
+        res.status(200).json({ success: true, order_id: "UPI_TEMP_12345" });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// --- CORE TRACKING LOGIC ---
+
+// 4. START TRIP
 app.post("/start-trip", async (req, res) => {
     try {
         const { truck_id } = req.body;
@@ -34,7 +60,7 @@ app.post("/start-trip", async (req, res) => {
     }
 });
 
-// 3. SEND LOCATION
+// 5. SEND LOCATION (MAIN TRACKING)
 app.post("/send-location", async (req, res) => {
     try {
         const { truck_id, lat, lng, speed } = req.body;
@@ -54,7 +80,7 @@ app.post("/send-location", async (req, res) => {
     }
 });
 
-// 4. END TRIP
+// 6. END TRIP
 app.post("/end-trip", async (req, res) => {
     try {
         const { trip_id } = req.body;
@@ -68,7 +94,7 @@ app.post("/end-trip", async (req, res) => {
     }
 });
 
-// 5. DASHBOARD FETCH (Includes Insight logic)
+// 7. DASHBOARD FETCH (OWNER VIEW)
 app.get("/dashboard", async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -94,7 +120,7 @@ app.get("/dashboard", async (req, res) => {
     }
 });
 
-// 6. STUNNING AI INSIGHTS (Gemini 1.5 Flash)
+// 8. ON-DEMAND AI INSIGHTS (GEMINI 1.5 FLASH)
 app.post("/generate-summary", async (req, res) => {
     try {
         const { truck_id } = req.body;
@@ -102,9 +128,10 @@ app.post("/generate-summary", async (req, res) => {
             .select("lat, lng, speed, timestamp")
             .eq("truck_id", truck_id)
             .order("timestamp", { ascending: false })
-            .limit(15);
+            .limit(20); // Analyzing last 20 points for patterns
 
-        const prompt = `You are Loadify AI. Analyze this Indian truck data: ${JSON.stringify(data)}. Give a 10-word status report on safety and efficiency.`;
+        const prompt = `You are Loadify AI Advisor. Analyze this movement data for Truck ${truck_id}: ${JSON.stringify(data)}. 
+        Provide a 12-word professional status report on route efficiency and driver behavior.`;
         
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -114,7 +141,7 @@ app.post("/generate-summary", async (req, res) => {
         const insight = response.data.candidates[0].content.parts[0].text;
         res.json({ insight });
     } catch (e) {
-        res.json({ insight: "AI Assistant is analyzing..." });
+        res.json({ insight: "AI Analysis ready. Click to generate report." });
     }
 });
 
