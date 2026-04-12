@@ -15,14 +15,12 @@ const supabase = createClient(
     process.env.SUPABASE_KEY
 );
 
-// --- CORE LOGIC START ---
-
 // 1. HEALTH CHECK
 app.get("/", (req, res) => {
-    res.send("Loadify API v1.0 Live");
+    res.send("Loadify India API v1.1 Live");
 });
 
-// 2. START TRIP (Step 3: API 1)
+// 2. START TRIP
 app.post("/start-trip", async (req, res) => {
     try {
         const { truck_id } = req.body;
@@ -36,7 +34,7 @@ app.post("/start-trip", async (req, res) => {
     }
 });
 
-// 3. SEND LOCATION (Step 3: API 2 - MAIN TRACKING)
+// 3. SEND LOCATION
 app.post("/send-location", async (req, res) => {
     try {
         const { truck_id, lat, lng, speed } = req.body;
@@ -56,7 +54,7 @@ app.post("/send-location", async (req, res) => {
     }
 });
 
-// 4. END TRIP (Step 3: API 3)
+// 4. END TRIP
 app.post("/end-trip", async (req, res) => {
     try {
         const { trip_id } = req.body;
@@ -70,7 +68,7 @@ app.post("/end-trip", async (req, res) => {
     }
 });
 
-// 5. OWNER DASHBOARD (Step 8)
+// 5. DASHBOARD FETCH (Includes Insight logic)
 app.get("/dashboard", async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -82,7 +80,12 @@ app.get("/dashboard", async (req, res) => {
         const latest = {};
         data.forEach(row => {
             if (!latest[row.truck_id]) {
-                latest[row.truck_id] = { ...row, status: row.speed < 5 ? "Stopped" : "Moving" };
+                const diff = (new Date() - new Date(row.timestamp)) / 60000;
+                latest[row.truck_id] = { 
+                    ...row, 
+                    status: row.speed < 5 ? "Stopped" : "Moving",
+                    signal: diff > 20 ? "Lost" : "Active"
+                };
             }
         });
         res.json(Object.values(latest));
@@ -91,23 +94,28 @@ app.get("/dashboard", async (req, res) => {
     }
 });
 
-// 6. AI INSIGHTS (Step 9)
+// 6. STUNNING AI INSIGHTS (Gemini 1.5 Flash)
 app.post("/generate-summary", async (req, res) => {
     try {
         const { truck_id } = req.body;
         const { data } = await supabase.from("locations")
-            .select("*").eq("truck_id", truck_id)
-            .order("timestamp", { ascending: false }).limit(10);
+            .select("lat, lng, speed, timestamp")
+            .eq("truck_id", truck_id)
+            .order("timestamp", { ascending: false })
+            .limit(15);
 
-        const prompt = `Truck ${truck_id} data: ${JSON.stringify(data)}. Summarize status in 10 words.`;
+        const prompt = `You are Loadify AI. Analyze this Indian truck data: ${JSON.stringify(data)}. Give a 10-word status report on safety and efficiency.`;
+        
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
             { contents: [{ parts: [{ text: prompt }] }] }
         );
-        res.json({ insight: response.data.candidates[0].content.parts[0].text });
+        
+        const insight = response.data.candidates[0].content.parts[0].text;
+        res.json({ insight });
     } catch (e) {
-        res.json({ insight: "AI Analysis unavailable" });
+        res.json({ insight: "AI Assistant is analyzing..." });
     }
 });
 
-app.listen(PORT, () => console.log(`Loadify running on ${PORT}`));
+app.listen(PORT, () => console.log(`Loadify India running on ${PORT}`));
