@@ -1,58 +1,91 @@
-<div id="owner-view" style="display:none">
-    <div id="sidebar">
-        <div class="side-header">
-            <img src="inverted-logo.svg" alt="Loadify" width="110">
-            <div class="badge">LIVE: <span id="count">0</span></div>
-        </div>
-        <div id="fleet-list" class="scroll-box"></div>
-    </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loadify India | Command Center</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    <div id="main-dashboard">
-        <div class="dashboard-row">
-            <div class="panel col-25">
-                <div class="panel-header">LIVE LOCATION</div>
-                <div id="map"></div>
+    <div id="gateway">
+        <div class="glass-login">
+            <img src="logo.svg" alt="Loadify" class="login-logo">
+            <div class="role-selector">
+                <button id="tab-owner" class="active" onclick="setRole('owner')">OWNER</button>
+                <button id="tab-driver" onclick="setRole('driver')">DRIVER</button>
             </div>
-
-            <div class="panel col-75">
-                <div class="panel-header">REAL-TIME TELEMETRY & ENGINE STATUS</div>
-                <div class="telemetry-grid">
-                    <div class="stat-box">
-                        <small>CURRENT SPEED</small>
-                        <h2 id="live-speed">0 <span class="unit">KM/H</span></h2>
-                    </div>
-                    <div class="stat-box">
-                        <small>SIGNAL HEALTH</small>
-                        <h2 id="signal-health">--</h2>
-                    </div>
-                    <div class="stat-box">
-                        <small>IDLE DURATION</small>
-                        <h2 id="idle-time">0 <span class="unit">MIN</span></h2>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="dashboard-row">
-            <div class="panel col-50">
-                <div class="panel-header">SPEED INTENSITY (LAST 24 HOURS)</div>
-                <div id="graph-container">
-                    <div class="graph-bar-container" id="speed-bars"></div>
-                </div>
-            </div>
-
-            <div class="panel col-50">
-                <div class="panel-header">AI BUSINESS AUDIT (RANGE: 0-30 DAYS)</div>
-                <div class="audit-controls">
-                    <select id="audit-range">
-                        <option value="1">24h Quick Pulse</option>
-                        <option value="7" selected>7-Day Deep Audit</option>
-                        <option value="30">30-Day Monthly Audit</option>
-                    </select>
-                    <button class="audit-btn" onclick="triggerDeepAudit()">GENERATE VERDICT</button>
-                </div>
-                <div id="ai-audit-output" class="audit-result">Select a vehicle to begin audit...</div>
-            </div>
+            <input type="tel" id="login-phone" placeholder="Mobile Number">
+            <button class="main-btn" onclick="appLogin()">ACCESS SYSTEM</button>
         </div>
     </div>
-</div>
+
+    <div id="owner-view" style="display:none">
+        <div id="sidebar">
+            <div class="side-header">
+                <img src="inverted-logo.svg" alt="Loadify" width="110">
+                <div class="badge">LIVE: <span id="count">0</span></div>
+            </div>
+            <div id="fleet-list" class="scroll-box"></div>
+        </div>
+
+        <div id="main-dashboard">
+            <div class="dashboard-row">
+                <div class="panel col-25">
+                    <div class="panel-header">LIVE POSITION</div>
+                    <div id="map"></div>
+                </div>
+                <div class="panel col-75">
+                    <div class="panel-header">REAL-TIME TELEMETRY</div>
+                    <div class="telemetry-grid">
+                        <div class="stat">
+                            <small>CURRENT SPEED</small>
+                            <h2 id="live-speed">0 <small>KM/H</small></h2>
+                        </div>
+                        <div class="stat">
+                            <small>SIGNAL HEALTH</small>
+                            <h2 id="signal-health">--</h2>
+                        </div>
+                        <div class="stat">
+                            <small>LAST UPDATED</small>
+                            <h2 id="last-ping">--</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dashboard-row">
+                <div class="panel col-50">
+                    <div class="panel-header">SPEED INTENSITY (24H)</div>
+                    <div id="speed-bars" class="graph-box"></div>
+                </div>
+                <div class="panel col-50">
+                    <div class="panel-header">AI BUSINESS AUDIT (0-30 DAYS)</div>
+                    <div class="audit-controls">
+                        <select id="audit-range">
+                            <option value="1">24h Pulse</option>
+                            <option value="7" selected>7-Day Deep Audit</option>
+                            <option value="30">30-Day Monthly Audit</option>
+                        </select>
+                        <button class="audit-btn" onclick="triggerDeepAudit()">GENERATE VERDICT</button>
+                    </div>
+                    <div id="ai-audit-output" class="audit-result">Select vehicle to audit...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="driver-view" style="display:none">
+        <div class="console">
+            <img src="logo.svg" alt="Loadify" width="180">
+            <h1 id="truck-display">WB26-X0606</h1>
+            <div id="live-status" class="off">OFFLINE</div>
+            <button id="trip-btn" onclick="handleTrip()">START TRIP</button>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
