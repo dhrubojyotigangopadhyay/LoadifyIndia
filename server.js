@@ -10,26 +10,36 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 
 // Initialize Supabase
-// Ensure these match your Render/Railway Environment Variables exactly
 const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_KEY
 );
 
-// Health Check
+// --- CORE LOGIC START ---
+
+// 1. HEALTH CHECK
 app.get("/", (req, res) => {
-    res.send("Loadify Backend is Live");
+    res.send("Loadify API v1.0 Live");
 });
 
-// API 1: SEND LOCATION (MAIN API)
+// 2. START TRIP (Step 3: API 1)
+app.post("/start-trip", async (req, res) => {
+    try {
+        const { truck_id } = req.body;
+        const { data, error } = await supabase.from("trips").insert([
+            { truck_id, start_time: new Date().toISOString() }
+        ]).select();
+        if (error) throw error;
+        res.status(200).json({ success: true, trip: data[0] });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 3. SEND LOCATION (Step 3: API 2 - MAIN TRACKING)
 app.post("/send-location", async (req, res) => {
     try {
         const { truck_id, lat, lng, speed } = req.body;
-
-        if (!truck_id || lat === undefined || lng === undefined) {
-            return res.status(400).json({ error: "Missing required tracking data" });
-        }
-
         const { error } = await supabase.from("locations").insert([
             {
                 truck_id: String(truck_id),
@@ -39,169 +49,65 @@ app.post("/send-location", async (req, res) => {
                 timestamp: new Date().toISOString()
             }
         ]);
-
         if (error) throw error;
-
-        res.status(200).json({ success: true, message: "Location updated" });
+        res.status(200).json({ success: true });
     } catch (e) {
-        console.error("SEND LOCATION ERROR:", e.message);
         res.status(500).json({ error: e.message });
     }
 });
 
-// API 2: DASHBOARD (FETCH LATEST FOR ALL TRUCKS)
+// 4. END TRIP (Step 3: API 3)
+app.post("/end-trip", async (req, res) => {
+    try {
+        const { trip_id } = req.body;
+        const { error } = await supabase.from("trips")
+            .update({ end_time: new Date().toISOString() })
+            .eq("id", trip_id);
+        if (error) throw error;
+        res.status(200).json({ success: true });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// 5. OWNER DASHBOARD (Step 8)
 app.get("/dashboard", async (req, res) => {
     try {
         const { data, error } = await supabase
             .from("locations")
             .select("*")
             .order("timestamp", { ascending: false });
-
         if (error) throw error;
 
-        // Logic to get only the latest row for each unique truck
-        const latestPositions = {};
-        data.forEach((row) => {
-            if (!latestPositions[row.truck_id]) {
-                latestPositions[row.truck_id] = {
-                    ...row,
-                    status: row.speed < 5 ? "Stopped" : "Moving"
-                };
+        const latest = {};
+        data.forEach(row => {
+            if (!latest[row.truck_id]) {
+                latest[row.truck_id] = { ...row, status: row.speed < 5 ? "Stopped" : "Moving" };
             }
         });
-
-        res.json(Object.values(latestPositions));
+        res.json(Object.values(latest));
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// API 3: GENERATE AI INSIGHTS (GEMINI)
+// 6. AI INSIGHTS (Step 9)
 app.post("/generate-summary", async (req, res) => {
     try {
         const { truck_id } = req.body;
+        const { data } = await supabase.from("locations")
+            .select("*").eq("truck_id", truck_id)
+            .order("timestamp", { ascending: false }).limit(10);
 
-        const { data, error } = await supabase
-            .from("locations")
-            .select("*")
-            .eq("truck_id", truck_id)
-            .order("timestamp", { ascending: false })
-            .limit(20);
-
-        if (error || !data.length) throw new Error("No data found for this truck");
-
-        const prompt = `Analyze this truck GPS data (lat, lng, speed). Provide a 1-sentence status report: ${JSON.stringify(data)}`;
-
+        const prompt = `Truck ${truck_id} data: ${JSON.stringify(data)}. Summarize status in 10 words.`;
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-            {
-                contents: [{ parts: [{ text: prompt }] }]
-            }
+            { contents: [{ parts: [{ text: prompt }] }] }
         );
-
-        const insight = response.data.candidates?.[0]?.content?.parts?.[0]?.text || "No insight available";
-        res.json({ insight });
+        res.json({ insight: response.data.candidates[0].content.parts[0].text });
     } catch (e) {
-        console.error("AI ERROR:", e.message);
-        res.json({ insight: "AI Analysis currently unavailable" });
+        res.json({ insight: "AI Analysis unavailable" });
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});    truck_id: String(truck_id),
-    lat: Number(lat),
-    lng: Number(lng),
-    speed: Number(speed || 0),
-    timestamp: new Date().toISOString()
-  }
-]);
-
-if (error) throw error;
-
-res.json({ success: true });
-```
-
-} catch (e) {
-console.log("SEND LOCATION ERROR:", e);
-res.status(500).json({ error: e.message });
-}
-});
-
-app.get("/dashboard", async (req, res) => {
-try {
-const { data, error } = await supabase
-.from("locations")
-.select("*")
-.order("timestamp", { ascending: false });
-
-```
-if (error) throw error;
-
-const latest = {};
-
-data.forEach((row) => {
-  if (!latest[row.truck_id]) {
-    latest[row.truck_id] = row;
-  }
-});
-
-const result = Object.values(latest).map((r) => ({
-  truck_id: r.truck_id,
-  lat: r.lat,
-  lng: r.lng,
-  speed: r.speed,
-  timestamp: r.timestamp,
-  status: r.speed < 5 ? "Stopped" : "Moving"
-}));
-
-res.json(result);
-```
-
-} catch (e) {
-console.log("DASHBOARD ERROR:", e);
-res.status(500).json({ error: e.message });
-}
-});
-
-app.post("/generate-summary", async (req, res) => {
-try {
-const { truck_id } = req.body;
-
-```
-const { data, error } = await supabase
-  .from("locations")
-  .select("*")
-  .eq("truck_id", truck_id)
-  .order("timestamp", { ascending: false })
-  .limit(50);
-
-if (error) throw error;
-
-const prompt =
-  "Analyze this trip data and give short insight: " +
-  JSON.stringify(data);
-
-const response = await axios.post(
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=" +
-    process.env.GEMINI_API_KEY,
-  {
-    contents: [{ parts: [{ text: prompt }] }]
-  }
-);
-
-const text =
-  response.data.candidates?.[0]?.content?.parts?.[0]?.text || "No insight";
-
-res.json({ insight: text });
-```
-
-} catch (e) {
-console.log("AI ERROR:", e);
-res.json({ insight: "AI failed" });
-}
-});
-
-app.listen(PORT, () => {
-console.log("Server running on port " + PORT);
-});
+app.listen(PORT, () => console.log(`Loadify running on ${PORT}`));
