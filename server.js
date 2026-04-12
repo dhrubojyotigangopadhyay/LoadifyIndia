@@ -11,32 +11,16 @@ const PORT = process.env.PORT || 3000;
 
 const supabase = createClient(
 process.env.SUPABASE_URL,
-process.env.SUPABASE_KEY
+process.env.SUPABASE_KEY,
+{
+auth: {
+persistSession: false
+}
+}
 );
 
 app.get("/", (req, res) => {
 res.send("Loadify backend running");
-});
-
-app.post("/start-trip", async (req, res) => {
-try {
-const { truck_id } = req.body;
-
-```
-const { data, error } = await supabase
-  .from("trips")
-  .insert([{ truck_id, start_time: new Date() }])
-  .select();
-
-if (error) throw error;
-
-res.json(data);
-```
-
-} catch (e) {
-console.log(e);
-res.status(500).json({ error: e.message });
-}
 });
 
 app.post("/send-location", async (req, res) => {
@@ -44,13 +28,17 @@ try {
 const { truck_id, lat, lng, speed } = req.body;
 
 ```
-const { error } = await supabase.from("locations").insert([
+if (!truck_id || lat === undefined || lng === undefined) {
+  return res.status(400).json({ error: "Missing data" });
+}
+
+const { data, error } = await supabase.from("locations").insert([
   {
-    truck_id,
-    lat,
-    lng,
-    speed,
-    timestamp: new Date()
+    truck_id: String(truck_id),
+    lat: Number(lat),
+    lng: Number(lng),
+    speed: Number(speed || 0),
+    timestamp: new Date().toISOString()
   }
 ]);
 
@@ -60,28 +48,7 @@ res.json({ success: true });
 ```
 
 } catch (e) {
-console.log(e);
-res.status(500).json({ error: e.message });
-}
-});
-
-app.post("/end-trip", async (req, res) => {
-try {
-const { trip_id } = req.body;
-
-```
-const { error } = await supabase
-  .from("trips")
-  .update({ end_time: new Date() })
-  .eq("id", trip_id);
-
-if (error) throw error;
-
-res.json({ success: true });
-```
-
-} catch (e) {
-console.log(e);
+console.log("ERROR:", e);
 res.status(500).json({ error: e.message });
 }
 });
@@ -161,5 +128,5 @@ res.json({ insight: "AI failed" });
 });
 
 app.listen(PORT, () => {
-console.log("Server running");
+console.log("Server running on port " + PORT);
 });
