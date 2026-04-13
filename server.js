@@ -15,18 +15,17 @@ const supabase = createClient(
     process.env.SUPABASE_KEY
 );
 
-// 1. HEALTH CHECK
+// 1. HEALTH CHECK (Wakes up the server)
 app.get("/", (req, res) => {
-    res.send("Loadify India API v1.2 Live | April 2026");
+    res.send("Loadify India API v1.2 Live | Pilot Network Active");
 });
 
-// --- FUTURE LOGIC PLACEHOLDERS ---
+// --- FUTURE PIPELINES (DO NOT REMOVE) ---
 
-// 2. AUTH: SUPABASE MOBILE OTP
+// 2. AUTH: SUPABASE MOBILE OTP 
 app.post("/auth/otp", async (req, res) => {
     try {
         const { phone } = req.body;
-        // logic for later: await supabase.auth.signInWithOtp({ phone })
         res.status(200).json({ success: true, message: "OTP pipeline ready" });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -37,16 +36,15 @@ app.post("/auth/otp", async (req, res) => {
 app.post("/payment/create", async (req, res) => {
     try {
         const { amount, truck_id } = req.body;
-        // logic for later: create Razorpay order or UPI intent
         res.status(200).json({ success: true, order_id: "UPI_TEMP_12345" });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// --- CORE TRACKING LOGIC ---
+// --- CORE LOGISTICS ENGINE ---
 
-// 4. START TRIP
+// 4. START TRIP (Pilot engages engine)
 app.post("/start-trip", async (req, res) => {
     try {
         const { truck_id } = req.body;
@@ -60,7 +58,7 @@ app.post("/start-trip", async (req, res) => {
     }
 });
 
-// 5. SEND LOCATION (MAIN TRACKING)
+// 5. SEND LOCATION (Main GPS Stream)
 app.post("/send-location", async (req, res) => {
     try {
         const { truck_id, lat, lng, speed } = req.body;
@@ -80,21 +78,7 @@ app.post("/send-location", async (req, res) => {
     }
 });
 
-// 6. END TRIP
-app.post("/end-trip", async (req, res) => {
-    try {
-        const { trip_id } = req.body;
-        const { error } = await supabase.from("trips")
-            .update({ end_time: new Date().toISOString() })
-            .eq("id", trip_id);
-        if (error) throw error;
-        res.status(200).json({ success: true });
-    } catch (e) {
-        res.status(500).json({ error: e.message });
-    }
-});
-
-// 7. DASHBOARD FETCH (OWNER VIEW)
+// 6. OWNER DASHBOARD DATA (Real-time Filtered)
 app.get("/dashboard", async (req, res) => {
     try {
         const { data, error } = await supabase
@@ -109,7 +93,7 @@ app.get("/dashboard", async (req, res) => {
                 const diff = (new Date() - new Date(row.timestamp)) / 60000;
                 latest[row.truck_id] = { 
                     ...row, 
-                    status: row.speed < 5 ? "Stopped" : "Moving",
+                    status: row.speed > 5 ? "Moving" : "Stopped",
                     signal: diff > 20 ? "Lost" : "Active"
                 };
             }
@@ -120,7 +104,7 @@ app.get("/dashboard", async (req, res) => {
     }
 });
 
-// 8. DYNAMIC DEEP AI REPORT (0-30 DAYS)
+// 7. DYNAMIC DEEP AI AUDIT (0-30 DAYS)
 app.post("/generate-deep-report", async (req, res) => {
     try {
         const { truck_id, days } = req.body;
@@ -133,11 +117,16 @@ app.post("/generate-deep-report", async (req, res) => {
             .gte("timestamp", rangeDate.toISOString())
             .order("timestamp", { ascending: false });
 
-        if (error) throw error;
+        if (error || !logs.length) throw new Error("No logs found for this period");
 
-        const prompt = `You are Loadify AI Advisor. Analyze ${days} days of Indian truck logs for ${truck_id}: ${JSON.stringify(logs)}. 
-        Report on: 1. Dhaba/Border/RTO delays 2. Safety Grade (A-F) based on speed 3. Route Efficiency tips (like avoiding Panagarh traffic). 
-        Format: Bulleted, Professional Indian Business Style. Max 50 words. Current date: April 13, 2026.`;
+        const prompt = `You are the Loadify India AI Fleet Auditor. 
+        Analyze ${days} days of logs for Truck ${truck_id}: ${JSON.stringify(logs)}. 
+        Current Date: April 13, 2026.
+        Report on: 
+        1. Operational Efficiency (Dhaba/Border/RTO delays).
+        2. Pilot Safety Grade (A-F) based on speed patterns.
+        3. Strategic Tips for the Owner to save fuel/time on Indian highways.
+        Use 50 words max, professional Indian business style.`;
         
         const response = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
@@ -147,33 +136,22 @@ app.post("/generate-deep-report", async (req, res) => {
         const insight = response.data.candidates[0].content.parts[0].text;
         res.json({ insight });
     } catch (e) {
-        res.json({ insight: "AI is scanning logs. Please ensure tracking was active during this period." });
+        res.json({ insight: "AI Analysis ready. Scan logs first to generate verdict." });
     }
 });
 
-// 9. ON-DEMAND QUICK INSIGHT (TRUCK CARD VERSION)
-app.post("/generate-summary", async (req, res) => {
+// 8. END TRIP
+app.post("/end-trip", async (req, res) => {
     try {
-        const { truck_id } = req.body;
-        const { data } = await supabase.from("locations")
-            .select("lat, lng, speed, timestamp")
-            .eq("truck_id", truck_id)
-            .order("timestamp", { ascending: false })
-            .limit(20);
-
-        const prompt = `You are Loadify AI Advisor. Analyze this movement data for Truck ${truck_id}: ${JSON.stringify(data)}. 
-        Provide a 12-word professional status report on route efficiency and driver behavior.`;
-        
-        const response = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
-            { contents: [{ parts: [{ text: prompt }] }] }
-        );
-        
-        const insight = response.data.candidates[0].content.parts[0].text;
-        res.json({ insight });
+        const { trip_id } = req.body;
+        const { error } = await supabase.from("trips")
+            .update({ end_time: new Date().toISOString() })
+            .eq("id", trip_id);
+        if (error) throw error;
+        res.status(200).json({ success: true });
     } catch (e) {
-        res.json({ insight: "AI Analysis ready. Click to generate report." });
+        res.status(500).json({ error: e.message });
     }
 });
 
-app.listen(PORT, () => console.log(`Loadify India running on ${PORT}`));
+app.listen(PORT, () => console.log(`Loadify Engine LIVE on port ${PORT}`));
