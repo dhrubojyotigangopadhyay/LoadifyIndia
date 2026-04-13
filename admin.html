@@ -1,34 +1,600 @@
-// Replace the <script> in loadify-admin.html with this integrated logic
-const API = 'https://loadifyindia.onrender.com';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Loadify India | BRIN Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:#f1f5f9;color:#0f172a;height:100vh;display:flex;overflow:hidden}
 
-async function syncAdmin() {
-    try {
-        const res = await fetch(`${API}/dashboard`);
-        const data = await res.json();
-        
-        // Update Stat Cards
-        document.querySelector('.stat-card.blue .stat-card-val').textContent = data.length;
-        document.querySelector('.stat-card.green .stat-card-val').textContent = data.filter(t => t.speed > 5).length;
-        
-        // Update All Owners Table
-        const tbody = document.getElementById('all-owners-tbody');
-        tbody.innerHTML = data.map(truck => `
-            <tr>
-                <td><input type="checkbox"></td>
-                <td class="td-name">${truck.truck_id}</td>
-                <td><span class="badge active">PILOT ACTIVE</span></td>
-                <td>${truck.speed} KM/H</td>
-                <td class="font-bold text-blue-900">${truck.status}</td>
-            </tr>
-        `).join('');
-    } catch (e) { console.error("Admin Sync Error"); }
-}
+/* SIDEBAR */
+.sidebar{width:220px;background:#fff;border-right:1px solid #e2e8f0;display:flex;flex-direction:column;height:100vh;flex-shrink:0}
+.sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid #f0f0f0}
+.logo-top{display:flex;align-items:center;gap:8px}
+.logo-name{font-size:16px;font-weight:800;color:#1e3a8a}
+.logo-badge{background:#1e3a8a;color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px}
+.sidebar-nav{flex:1;padding:12px 12px;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:600;color:#64748b;cursor:pointer;margin-bottom:2px;transition:all 0.15s}
+.nav-item:hover{background:#f8fafc;color:#1e3a8a}
+.nav-item.active{background:#eff6ff;color:#1e3a8a}
+.nav-item .nav-icon{font-size:16px;width:20px;text-align:center}
+.sidebar-footer{padding:12px 16px;border-top:1px solid #f0f0f0;font-size:12px;color:#94a3b8}
 
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{background:#fff;border-bottom:1px solid #e2e8f0;padding:0 24px;height:56px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.topbar-logo{font-size:14px;font-weight:800;color:#1e3a8a;white-space:nowrap}
+.topbar-sep{color:#d1d5db;font-size:18px}
+.topbar-section{font-size:14px;font-weight:700;color:#374151}
+.topbar-search{flex:1;max-width:320px;margin:0 20px}
+.topbar-search input{width:100%;padding:8px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none;background:#f8fafc;color:#374151}
+.topbar-search input:focus{border-color:#1e3a8a;background:#fff}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.notif-btn{position:relative;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer}
+.notif-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.avatar{width:36px;height:36px;border-radius:50%;background:#1e3a8a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;cursor:pointer}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* PANELS */
+.panel{display:none}
+.panel.active{display:block}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px}
+.stat-card.blue::after{background:#3b82f6}
+.stat-card.green::after{background:#22c55e}
+.stat-card.yellow::after{background:#f59e0b}
+.stat-card.red::after{background:#ef4444}
+.stat-card-label{font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.stat-card-val{font-size:32px;font-weight:800;color:#0f172a;line-height:1}
+.stat-card-val.colored{color:#1e3a8a}
+.stat-card-sub{font-size:12px;color:#94a3b8;margin-top:6px;font-weight:500}
+.stat-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;margin-top:8px}
+.stat-badge.red{background:#fef2f2;color:#ef4444}
+
+/* CHARTS ROW */
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.chart-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:20px}
+.chart-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+.chart-card-sub{font-size:12px;color:#94a3b8;margin-bottom:16px}
+
+/* TABLES */
+.table-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}
+.table-header{padding:16px 20px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
+.table-header h3{font-size:15px;font-weight:700}
+.table-header-right{display:flex;gap:8px;align-items:center}
+.tbl-btn{padding:6px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;background:#fff;color:#374151}
+.tbl-btn:hover{background:#f8fafc}
+.tbl-btn.primary{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #f0f4f8;background:#fafbfc}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid #f9fafb;color:#374151}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f8fafc}
+.td-name{font-weight:700;color:#0f172a}
+.td-flex{display:flex;align-items:center;gap:10px}
+.td-avatar{width:32px;height:32px;border-radius:50%;background:#eff6ff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.badge.active{background:#dcfce7;color:#16a34a}
+.badge.pending{background:#fef9c3;color:#854d0e}
+.badge.trial{background:#e0f2fe;color:#0369a1}
+.badge.sandpay{background:#fce7f3;color:#be185d}
+.badge.onlimit{background:#fee2e2;color:#dc2626}
+.badge.inactive{background:#f3f4f6;color:#6b7280}
+
+/* REMINDER */
+.remind-btn{padding:5px 12px;background:#1e3a8a;color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+
+/* OWNER DETAIL */
+.detail-panel{background:#fff;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}
+.dp-header{padding:20px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:flex-start}
+.dp-name{font-size:20px;font-weight:800}
+.dp-phone{font-size:13px;color:#64748b;margin-top:4px;font-weight:500}
+.dp-meta{font-size:12px;color:#94a3b8;margin-top:2px}
+.dp-sub-info{font-size:12px;color:#374151;margin-top:8px}
+.dp-trial{background:#fef9c3;color:#854d0e;font-size:12px;font-weight:700;padding:4px 10px;border-radius:6px;display:inline-flex;align-items:center;gap:6px;margin-top:8px}
+.dp-body{padding:0}
+.dp-trip-row{display:grid;grid-template-columns:60px 1fr 80px 80px 80px 80px 80px;gap:0;padding:10px 20px;border-bottom:1px solid #f5f7fa;font-size:12px;align-items:center}
+.dp-trip-row.header{background:#fafbfc;font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase}
+.dp-trip-row:last-child{border-bottom:none}
+
+/* FLEET OVERVIEW */
+.fleet-overview-header{padding:20px;border-bottom:1px solid #f0f4f8;display:flex;justify-content:space-between;align-items:center}
+.fleet-stats-row{display:flex;gap:0;border-bottom:1px solid #f0f4f8}
+.fleet-stat{flex:1;padding:16px 20px;text-align:center;border-right:1px solid #f0f4f8}
+.fleet-stat:last-child{border-right:none}
+.fleet-stat-val{font-size:22px;font-weight:800}
+.fleet-stat-lbl{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-top:3px}
+#map-fleet{height:220px;width:100%}
+
+/* BILLING PANEL */
+.billing-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;margin-bottom:16px;overflow:hidden}
+.billing-card-header{padding:16px 20px;border-bottom:1px solid #f0f4f8;font-size:15px;font-weight:700}
+.billing-owner-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-bottom:1px solid #f0f4f8}
+.bos{padding:16px 20px;border-right:1px solid #f0f4f8;text-align:center}
+.bos:last-child{border-right:none}
+.bos-val{font-size:20px;font-weight:800}
+.bos-lbl{font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;margin-top:3px}
+.billing-section{padding:16px 20px}
+.billing-section-title{font-size:13px;font-weight:700;margin-bottom:10px}
+.billing-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f9fafb;font-size:13px}
+.billing-row:last-child{border-bottom:none}
+.billing-row-label{color:#64748b;font-weight:500}
+.billing-row-val{font-weight:700;color:#0f172a}
+.charge-btn{width:100%;padding:14px;background:#1e3a8a;color:#fff;border:none;border-radius:0 0 12px 12px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:0.3px}
+.charge-btn:hover{background:#1e40af}
+
+/* REPORTS */
+.report-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* FILTER TAGS */
+.filter-bar{display:flex;gap:8px;padding:16px 20px;border-bottom:1px solid #f0f4f8;overflow-x:auto}
+.filter-tag{padding:5px 12px;border:1px solid #e2e8f0;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;background:#fff;color:#374151;transition:all 0.15s}
+.filter-tag.active{background:#1e3a8a;color:#fff;border-color:#1e3a8a}
+.filter-tag:hover:not(.active){background:#f8fafc}
+
+/* MAP ADMIN */
+#map-admin{height:400px;width:100%;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;z-index:1}
+
+/* SEND REMINDER */
+.reminder-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:16px;margin-top:16px}
+.reminder-box h4{font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px}
+.reminder-list{space-y:4px}
+.reminder-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #fde68a;font-size:12px}
+.reminder-item:last-child{border-bottom:none}
+.reminder-name{font-weight:600;color:#78350f}
+.reminder-trial{color:#a16207;font-weight:500}
+
+/* UTILS */
+.flex{display:flex}.flex-1{flex:1}.gap-3{gap:12px}.items-center{align-items:center}.justify-between{justify-content:space-between}
+.text-right{text-align:right}.font-bold{font-weight:700}.text-sm{font-size:13px}.text-xs{font-size:11px}.text-gray{color:#64748b}
+.mt-1{margin-top:4px}.mt-2{margin-top:8px}.mt-4{margin-top:16px}
+.section-title{font-size:15px;font-weight:800;margin-bottom:12px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-top">
+      <span class="logo-name">Loadify India</span>
+      <span class="logo-badge">BRIN</span>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-item active" onclick="switchNav('dashboard',this)"><span class="nav-icon">⊞</span> Dashboard</div>
+    <div class="nav-item" onclick="switchNav('owners',this)"><span class="nav-icon">👥</span> Owners</div>
+    <div class="nav-item" onclick="switchNav('reports',this)"><span class="nav-icon">📄</span> Reports</div>
+    <div class="nav-item" onclick="switchNav('billing',this)"><span class="nav-icon">💳</span> Billing</div>
+    <div class="nav-item" onclick="switchNav('settings',this)"><span class="nav-icon">⚙️</span> Settings</div>
+    <div style="margin-top:16px;padding:0 4px">
+      <div style="font-size:10px;font-weight:700;color:#cbd5e1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Support</div>
+      <div class="nav-item"><span class="nav-icon">💬</span> Help</div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">v2.1.4 · April 2026</div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar" id="topbar">
+    <span class="topbar-logo">Loadify India</span>
+    <span class="topbar-sep">|</span>
+    <span class="topbar-section" id="topbar-section">Dashboard</span>
+    <div class="topbar-search">
+      <input type="text" placeholder="Search owner, truck, trip..." id="global-search" oninput="globalSearch(this.value)">
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn">🔔<span class="notif-badge">4</span></button>
+      <div class="avatar">DG</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══════════════ DASHBOARD ══════════════ -->
+    <div id="panel-dashboard" class="panel active">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div>
+          <h1 style="font-size:22px;font-weight:800">Admin Dashboard</h1>
+          <p style="font-size:13px;color:#64748b;margin-top:2px">Loadify Satellites: 4 trucks active · April 13, 2026</p>
+        </div>
+        <button style="background:#1e3a8a;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">+ Add Owner</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card blue">
+          <div class="stat-card-label">Total Owners</div>
+          <div class="stat-card-val">110</div>
+          <div class="stat-card-sub">↑ 12 this month</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-card-label">Paying Users</div>
+          <div class="stat-card-val">76</div>
+          <div class="stat-card-sub">69% conversion</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="stat-card-label">Monthly Revenue</div>
+          <div class="stat-card-val colored">₹2,34,560</div>
+          <div class="stat-card-sub">↑ 34% from Mar</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-card-label">On Free Trial</div>
+          <div class="stat-card-val">34</div>
+          <div class="stat-badge red">12 ending soon</div>
+        </div>
+      </div>
+
+      <div class="charts-row">
+        <div class="chart-card">
+          <h3>Monthly Revenue</h3>
+          <div class="chart-card-sub">Jan–Apr 2026</div>
+          <canvas id="rev-chart" height="160"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>Monthly Usage</h3>
+          <div class="chart-card-sub" style="display:flex;justify-content:space-between">
+            <span>Free: Starting</span>
+            <div style="text-align:right">
+              <div style="font-size:13px;font-weight:700">₹5,00</div>
+              <div style="font-size:12px;color:#94a3b8">Unlimited</div>
+              <div style="font-size:13px;font-weight:700;color:#1e3a8a">₹3,Srrip</div>
+            </div>
+          </div>
+          <canvas id="usage-chart" height="130"></canvas>
+          <div style="margin-top:12px">
+            <button style="width:100%;padding:10px;background:#1e3a8a;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit">SEND REMINDER ▼</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- TOP OWNERS -->
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Top Owners</h3>
+            <div class="table-header-right">
+              <button class="tbl-btn">See Page ›</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Trucks</th><th>Revenue</th><th>Status</th></tr></thead>
+            <tbody id="top-owners-tbody"></tbody>
+          </table>
+        </div>
+
+        <!-- FREE TRIAL ENDING -->
+        <div class="table-card">
+          <div class="table-header">
+            <h3>Free Trial Ending Soon</h3>
+            <div class="table-header-right"><span style="font-size:12px;color:#ef4444;font-weight:700">4 expiring owners</span></div>
+          </div>
+          <table>
+            <thead><tr><th>Name</th><th>Trial Ends</th><th>Phone</th><th>Action</th></tr></thead>
+            <tbody id="trial-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ OWNERS ══════════════ -->
+    <div id="panel-owners" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <h1 style="font-size:22px;font-weight:800">All Owners</h1>
+          <p style="font-size:13px;color:#64748b;margin-top:2px">110 total · 76 paying · 34 trial</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tbl-btn">Credit Holidays for Truck ×</button>
+          <button class="tbl-btn primary" onclick="openFleetOverview()">Fleet Overview</button>
+        </div>
+      </div>
+      <div class="filter-bar">
+        <div class="filter-tag active" onclick="filterOwners('all',this)">All (110)</div>
+        <div class="filter-tag" onclick="filterOwners('paying',this)">Paying (76)</div>
+        <div class="filter-tag" onclick="filterOwners('trial',this)">Free Trial (34)</div>
+        <div class="filter-tag" onclick="filterOwners('active',this)">Active</div>
+        <div class="filter-tag" onclick="filterOwners('pending',this)">Pending</div>
+      </div>
+      <div class="table-card">
+        <table>
+          <thead><tr><th></th><th>Name ↑</th><th>Subcr.</th><th>Subscription</th><th>Total Trips</th><th>Total Savings</th><th></th></tr></thead>
+          <tbody id="all-owners-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════ FLEET OVERVIEW (Owner drill-down) ══════════════ -->
+    <div id="panel-fleet-overview" class="panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#1e3a8a;cursor:pointer;margin-bottom:4px" onclick="switchPanel('owners')">‹ Back to Owners</div>
+          <h1 style="font-size:20px;font-weight:800">Patrick Patel / Fleet Overview</h1>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="tbl-btn" id="fleet-tab-btn" onclick="toggleFleetView('fleet')">🚛 80 Trucks</button>
+          <button class="tbl-btn" onclick="toggleFleetView('table')">Table ▼</button>
+        </div>
+      </div>
+
+      <div class="table-card" id="fleet-trucks-table" style="margin-bottom:16px">
+        <div class="fleet-stats-row">
+          <div class="fleet-stat"><div class="fleet-stat-val">6</div><div class="fleet-stat-lbl">Trucks</div></div>
+          <div class="fleet-stat"><div class="fleet-stat-val" style="color:#16a34a">4</div><div class="fleet-stat-lbl">Running</div></div>
+          <div class="fleet-stat"><div class="fleet-stat-val" style="color:#f97316">3.8</div><div class="fleet-stat-lbl">Avg Hrs/Trip</div></div>
+          <div class="fleet-stat"><div class="fleet-stat-val" style="color:#1e3a8a">₹1,200</div><div class="fleet-stat-lbl">5.4 M/Liter</div></div>
+        </div>
+        <div id="map-fleet" style="height:220px"></div>
+        <table>
+          <thead><tr><th></th><th>Truck</th><th>Driver Name</th><th>Subscription Number</th><th>Total Trips</th><th>Status Breakdown</th><th>Earn Reminder</th></tr></thead>
+          <tbody id="fleet-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Owner detail billing -->
+      <div class="billing-card">
+        <div class="billing-card-header" style="display:flex;justify-content:space-between;align-items:center">
+          <span>Rajesh Sharma / Charge Owner</span>
+          <button class="tbl-btn">⬇ Download CSV</button>
+        </div>
+        <div class="billing-owner-stats">
+          <div class="bos"><div class="bos-val">432</div><div class="bos-lbl" style="display:flex;align-items:center;gap:4px;justify-content:center"><span>Total Trips</span><span class="badge active" style="padding:1px 6px;font-size:10px">0610</span></div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Fluchn Daon The Goalps</div></div>
+          <div class="bos"><div class="bos-val">₹6,68,000</div><div class="bos-lbl">Total Freight</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Fluchn Trsnd Tlmia</div></div>
+          <div class="bos"><div class="bos-val">42 hours</div><div class="bos-lbl">Rate Numbes OCT</div><div style="font-size:11px;color:#94a3b8;margin-top:4px">Sacsh Uhuogrd Doostopan</div></div>
+        </div>
+        <div class="billing-section">
+          <div class="billing-section-title">Flesible Billing <span style="color:#94a3b8;font-weight:500">Sanse Trip '8/778</span></div>
+          <div class="billing-row"><div><div style="font-weight:700">832 Trips</div><div style="font-size:11px;color:#94a3b8">Sast Crangr</div></div><div style="text-align:right"><div style="color:#94a3b8;font-size:12px">1.As Danse · 790a lon · 4</div><div style="font-size:11px;color:#94a3b8">13.li Dnager: 091G for - 790.335000</div></div><div class="flex items-center"><div class="billing-row-val">₹804</div></div></div>
+          <div class="billing-section-title" style="margin-top:12px">Fixed Billing <span style="color:#94a3b8;font-weight:500">Sest Drspe</span></div>
+          <div class="billing-row"><div class="billing-row-label">432 Trips · NSC c · Trip · 3</div><div class="billing-row-val">₹5,4</div></div>
+          <div style="display:flex;gap:8px;margin-top:12px;align-items:center">
+            <div style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;color:#94a3b8">Cusrpment 30001</div>
+            <div style="flex:1;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;color:#94a3b8">Phoane Baorth 218</div>
+            <div style="border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-size:13px;color:#94a3b8">Sagrrement</div>
+            <button style="background:#1e3a8a;color:#fff;border:none;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer">+</button>
+          </div>
+        </div>
+        <button class="charge-btn">CHARGE OWNER</button>
+      </div>
+    </div>
+
+    <!-- ══════════════ REPORTS ══════════════ -->
+    <div id="panel-reports" class="panel">
+      <div style="margin-bottom:20px"><h1 style="font-size:22px;font-weight:800">Reports</h1><p style="font-size:13px;color:#64748b;margin-top:2px">Platform-wide analytics · April 2026</p></div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-card-label">Total Trips (Month)</div><div class="stat-card-val">2,841</div><div class="stat-card-sub">↑ 18% from Mar</div></div>
+        <div class="stat-card green"><div class="stat-card-label">Total Freight</div><div class="stat-card-val colored">₹4.2Cr</div><div class="stat-card-sub">Across all fleets</div></div>
+        <div class="stat-card yellow"><div class="stat-card-label">Avg Trip Value</div><div class="stat-card-val">₹14,800</div><div class="stat-card-sub">+₹800 from last mo.</div></div>
+        <div class="stat-card red"><div class="stat-card-label">Signal Lost Events</div><div class="stat-card-val">47</div><div class="stat-card-sub">↓ 12 from last mo.</div></div>
+      </div>
+      <div class="chart-card" style="margin-bottom:16px"><h3>Revenue Trend (Last 6 Months)</h3><div class="chart-card-sub">₹ MRR</div><canvas id="reports-chart" height="120"></canvas></div>
+      <div class="table-card">
+        <div class="table-header"><h3>Top Routes by Freight</h3></div>
+        <table>
+          <thead><tr><th>Route</th><th>Trips</th><th>Total Freight</th><th>Avg Value</th><th>Signal Loss %</th></tr></thead>
+          <tbody>
+            <tr><td class="td-name">Pune → Mumbai</td><td>432</td><td>₹62,40,000</td><td>₹14,400</td><td style="color:#16a34a">2.1%</td></tr>
+            <tr><td class="td-name">Kolkata → Delhi</td><td>218</td><td>₹45,78,000</td><td>₹20,900</td><td style="color:#f97316">8.4%</td></tr>
+            <tr><td class="td-name">Mumbai → Surat</td><td>310</td><td>₹28,52,000</td><td>₹9,200</td><td style="color:#16a34a">1.8%</td></tr>
+            <tr><td class="td-name">Delhi → Jaipur</td><td>174</td><td>₹18,92,000</td><td>₹10,900</td><td style="color:#16a34a">3.2%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════ BILLING ══════════════ -->
+    <div id="panel-billing" class="panel">
+      <div style="margin-bottom:20px"><h1 style="font-size:22px;font-weight:800">Billing</h1><p style="font-size:13px;color:#64748b;margin-top:2px">Subscriptions, invoices & payments</p></div>
+      <div class="stats-grid">
+        <div class="stat-card blue"><div class="stat-card-label">MRR</div><div class="stat-card-val colored">₹96,754</div><div class="stat-card-sub">↑ 34% from Mar</div></div>
+        <div class="stat-card green"><div class="stat-card-label">Fleet Pro</div><div class="stat-card-val">76</div><div class="stat-card-sub">₹999/mo each</div></div>
+        <div class="stat-card yellow"><div class="stat-card-label">Overdue</div><div class="stat-card-val">8</div><div class="stat-card-sub">₹7,992 pending</div></div>
+        <div class="stat-card red"><div class="stat-card-label">Churn Risk</div><div class="stat-card-val">14</div><div class="stat-badge red">Alert</div></div>
+      </div>
+      <div class="table-card">
+        <div class="table-header"><h3>All Subscriptions</h3>
+          <div class="table-header-right">
+            <button class="tbl-btn">Export CSV</button>
+            <button class="tbl-btn primary" onclick="alert('Reminders sent!')">Send All Reminders</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Owner</th><th>Plan</th><th>Trucks</th><th>Amount</th><th>Status</th><th>Next Due</th><th>Action</th></tr></thead>
+          <tbody id="billing-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════ SETTINGS ══════════════ -->
+    <div id="panel-settings" class="panel">
+      <div style="margin-bottom:20px"><h1 style="font-size:22px;font-weight:800">Settings</h1></div>
+      <div class="two-col">
+        <div class="billing-card">
+          <div class="billing-card-header">🔒 API Configuration</div>
+          <div class="billing-section">
+            <div style="margin-bottom:12px"><label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px">Backend API URL</label><input style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" value="https://loadifyindia.onrender.com" readonly></div>
+            <div style="margin-bottom:12px"><label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px">Supabase Project</label><input style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;font-family:inherit;outline:none" value="loadify-prod-xyz" readonly></div>
+            <div><label style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;display:block;margin-bottom:6px">Gemini AI Status</label><div style="display:flex;align-items:center;gap:8px"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div><span style="font-size:13px;font-weight:600;color:#16a34a">Connected</span></div></div>
+          </div>
+        </div>
+        <div class="billing-card">
+          <div class="billing-card-header">📱 App Settings</div>
+          <div class="billing-section">
+            <div class="billing-row"><span class="billing-row-label">GPS Refresh Interval</span><span class="billing-row-val">10 sec</span></div>
+            <div class="billing-row"><span class="billing-row-label">Signal Lost Threshold</span><span class="billing-row-val">20 min</span></div>
+            <div class="billing-row"><span class="billing-row-label">Auto WhatsApp Alerts</span><span style="color:#16a34a;font-weight:700">ON</span></div>
+            <div class="billing-row"><span class="billing-row-label">Demo Mode</span><span style="color:#f97316;font-weight:700">ON</span></div>
+            <div class="billing-row"><span class="billing-row-label">Free Trial Duration</span><span class="billing-row-val">14 days</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── DATA ──────────────────────────────────────────────
+const TOP_OWNERS = [
+  { name:'Patrick Patel', trucks:45, revenue:'₹2,000', status:'active' },
+  { name:'Rajesh Sharma', trucks:38, revenue:'₹3,000', status:'active' },
+  { name:'Manish Trivedi', trucks:26, revenue:'₹2,000', status:'pending' },
+  { name:'Suresh Kumar', trucks:22, revenue:'₹2,000', status:'active' },
+  { name:'Jooti Verma', trucks:18, revenue:'₹1,000', status:'sandpay' },
+];
+const TRIAL_OWNERS = [
+  { name:'Prisle Msarma', trial:'Soon:38 · 50.31.3891', phone:'91 31.000' },
+  { name:'Rshce Razzion', trial:'T60.038.336', phone:'54641' },
+  { name:'Rsmile 3sitave', trial:'11 110.1 50', phone:'YRMM8' },
+];
+const ALL_OWNERS = [
+  { name:'Patrick Patel', sub:'LIFETIME', subcr:'31 nov, 2023', trips:2, trucks:38, savings:'5,00,000s' },
+  { name:'Rajesh Sharma', sub:'SANDPAY', subcr:'33 nov, 2023', trips:2, trucks:36, savings:'10,00,000pp' },
+  { name:'Manish Trivedi', sub:'Bits Bunlitet', subcr:'37 nov, 2023', trips:4, trucks:36, savings:'75,000s' },
+  { name:'Suresh Kumar', sub:'XAMBTER', subcr:'33 nov, 2023', trips:0, trucks:11, savings:'13,000.Ops' },
+  { name:'Jooti Verma', sub:'LIBVE', subcr:'39 nov, 2023', trips:2, trucks:18, savings:'P3,00,000' },
+  { name:'Mohit Ansari', sub:'SIMBTER', subcr:'31 nov, 2023', trips:1, trucks:11, savings:'18,000.Ops' },
+  { name:'Jovi Sekar', sub:'SIMBTER', subcr:'31 nov, 2023', trips:2, trucks:12, savings:'₹11,000,000' },
+  { name:'BunMltbor', sub:'SANDPAY', subcr:'27 nov, 2023', trips:2, trucks:38, savings:'11,000,000pp' },
+];
+const FLEET_DATA = [
+  { name:'Total Trucks', driver:'Truck_Abcoto', sub:2, trips:18, earn:'₹3,010', status:'SANDPAY' },
+  { name:'Rajesh Sharma', driver:'Truck_Baccito', sub:2, trips:10, earn:'₹3,010', status:'SANDPAY' },
+  { name:'Manish Trivedi', driver:'Truck_3, Sbar 8to', sub:2, trips:14, earn:'₹3,010', status:'Bits Bunlitet' },
+  { name:'Suresh Kumar', driver:'Truck_Abcote', sub:2, trips:18, earn:'₹3,010', status:'XAMBTER' },
+  { name:'Jooti Verma', driver:'Phrch Llossas', sub:2, trips:15, earn:'₹3,010', status:'SIMBTER' },
+  { name:'Moha Custer', driver:'Plach 29 Var cs', sub:2, trips:15, earn:'₹3,010', status:'SIMBTER' },
+];
+const BILLING_DATA = [
+  { name:'Patrick Patel', plan:'Fleet Pro', trucks:45, amount:'₹999', status:'active', due:'May 1' },
+  { name:'Rajesh Sharma', plan:'Fleet Pro', trucks:38, amount:'₹999', status:'active', due:'May 5' },
+  { name:'Manish Trivedi', plan:'Fleet Pro', trucks:26, amount:'₹999', status:'pending', due:'Apr 14' },
+  { name:'Suresh Kumar', plan:'Basic', trucks:11, amount:'₹499', status:'active', due:'May 10' },
+  { name:'Jooti Verma', plan:'Fleet Pro', trucks:18, amount:'₹999', status:'trial', due:'Apr 20' },
+  { name:'Mohit Ansari', plan:'Basic', trucks:11, amount:'₹499', status:'pending', due:'Apr 13' },
+];
+
+// ── NAV ────────────────────────────────────────────────
 function switchNav(panel, el) {
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-    el.classList.add('active');
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + panel).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  switchPanel(panel);
 }
 
-window.onload = () => { syncAdmin(); setInterval(syncAdmin, 10000); };
+function switchPanel(id) {
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.getElementById('topbar-section').textContent = id.charAt(0).toUpperCase()+id.slice(1);
+  if(id==='dashboard') renderDashboard();
+  if(id==='owners') renderOwners();
+  if(id==='billing') renderBilling();
+}
+
+function openFleetOverview() {
+  switchPanel('fleet-overview');
+  document.getElementById('topbar-section').textContent = 'Fleet Overview';
+  renderFleetTable();
+  initFleetMap();
+}
+
+// ── RENDER ─────────────────────────────────────────────
+function renderDashboard() {
+  // Top owners
+  const tbody = document.getElementById('top-owners-tbody');
+  if(tbody) tbody.innerHTML = TOP_OWNERS.map(o=>`<tr><td><div class="td-flex"><div class="td-avatar">👤</div><span class="td-name">${o.name}</span></div></td><td>${o.trucks} trucks</td><td class="font-bold">${o.revenue}</td><td><span class="badge ${o.status}">${o.status==='active'?'Active':o.status==='pending'?'Pending':'SandPay'}</span> <button class="remind-btn">REMIND</button></td></tr>`).join('');
+  // Trial owners
+  const tbody2 = document.getElementById('trial-tbody');
+  if(tbody2) tbody2.innerHTML = TRIAL_OWNERS.map(o=>`<tr><td class="td-name">${o.name}</td><td style="color:#f97316;font-weight:600">${o.trial}</td><td>${o.phone}</td><td><button class="remind-btn">REMIND</button></td></tr>`).join('');
+}
+
+function renderOwners(filter='all') {
+  const data = filter==='all' ? ALL_OWNERS : ALL_OWNERS.filter(o=> filter==='paying' ? true : true);
+  const tbody = document.getElementById('all-owners-tbody');
+  if(tbody) tbody.innerHTML = data.map((o,i)=>`<tr onclick="openOwnerDetail('${o.name}')" style="cursor:pointer"><td><input type="checkbox"></td><td><div class="td-flex"><div class="td-avatar">👤</div><span class="td-name">${o.name}</span></div></td><td><span class="badge ${badgeClass(o.sub)}">${o.sub}</span></td><td style="color:#94a3b8;font-size:12px">${o.subcr}</td><td>${o.trips}</td><td class="font-bold">${o.trucks}</td><td class="font-bold text-right" style="color:#1e3a8a">${o.savings}</td></tr>`).join('');
+}
+
+function badgeClass(sub){
+  const m={'LIFETIME':'active','SANDPAY':'sandpay','XAMBTER':'trial','LIBVE':'active','SIMBTER':'pending','Bits Bunlitet':'inactive'};
+  return m[sub]||'inactive';
+}
+
+function filterOwners(type, el){
+  document.querySelectorAll('.filter-tag').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderOwners(type);
+}
+
+function openOwnerDetail(name){ openFleetOverview(); }
+
+function renderFleetTable(){
+  const tbody=document.getElementById('fleet-tbody');
+  if(tbody) tbody.innerHTML=FLEET_DATA.map(f=>`<tr><td><input type="checkbox"></td><td class="td-name">${f.name}</td><td style="color:#94a3b8">${f.driver}</td><td>${f.sub}</td><td>${f.trips}</td><td class="font-bold">${f.earn}</td><td><button class="remind-btn">REMIND</button></td></tr>`).join('');
+}
+
+function renderBilling(){
+  const tbody=document.getElementById('billing-tbody');
+  if(tbody) tbody.innerHTML=BILLING_DATA.map(b=>`<tr><td><div class="td-flex"><div class="td-avatar">👤</div><span class="td-name">${b.name}</span></div></td><td>${b.plan}</td><td>${b.trucks}</td><td class="font-bold">${b.amount}</td><td><span class="badge ${b.status}">${b.status==='active'?'Paid ✓':b.status==='trial'?'Trial':'Overdue !'}</span></td><td>${b.due}</td><td><button class="remind-btn">REMIND</button></td></tr>`).join('');
+}
+
+// ── CHARTS ─────────────────────────────────────────────
+let chartsInited = false;
+function initCharts() {
+  if(chartsInited) return;
+  chartsInited = true;
+  new Chart(document.getElementById('rev-chart').getContext('2d'),{
+    type:'bar',data:{labels:['Nov','Dec','Jan','Feb','Mar','Apr','Jul','Aug'],datasets:[{label:'Subscriptions',data:[0,25,20,5,30,28,20,30],backgroundColor:'#3b82f6',borderRadius:4},{label:'Paying Users',data:[0,0,0,0,0,0,0,0],backgroundColor:'#1e3a8a',borderRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:true,labels:{font:{size:11,family:'Inter',weight:'600'}}}},scales:{y:{ticks:{color:'#94a3b8',font:{family:'Inter',size:11}},grid:{color:'#f1f5f9'}},x:{ticks:{color:'#94a3b8',font:{family:'Inter',size:11}},grid:{display:false}}}}
+  });
+  new Chart(document.getElementById('usage-chart').getContext('2d'),{
+    type:'doughnut',data:{labels:['Sem','+Unlimited','₹3.5rip'],datasets:[{data:[30,68,18],backgroundColor:['#e2e8f0','#3b82f6','#1e3a8a'],borderWidth:0}]},
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11,family:'Inter',weight:'600'}}}},cutout:'65%'}
+  });
+  new Chart(document.getElementById('reports-chart').getContext('2d'),{
+    type:'line',data:{labels:['Nov','Dec','Jan','Feb','Mar','Apr'],datasets:[{label:'MRR',data:[62000,71000,78000,82000,96000,96754],borderColor:'#1e3a8a',backgroundColor:'rgba(30,58,138,0.08)',fill:true,tension:0.4,pointBackgroundColor:'#1e3a8a',pointRadius:4}]},
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{ticks:{color:'#94a3b8',font:{family:'Inter',size:11},callback:v=>'₹'+v.toLocaleString('en-IN')},grid:{color:'#f1f5f9'}},x:{ticks:{color:'#94a3b8',font:{family:'Inter',size:11}},grid:{display:false}}}}
+  });
+}
+
+// ── FLEET MAP ──────────────────────────────────────────
+let fleetMapInited = false;
+function initFleetMap() {
+  if(fleetMapInited) return;
+  fleetMapInited = true;
+  setTimeout(()=>{
+    const m = L.map('map-fleet',{zoomControl:false,attributionControl:false}).setView([19.5,76.5],5);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(m);
+    [[18.5204,73.8567,'#16a34a','Truck #1 · Moving'],[20.0059,73.7799,'#ef4444','Truck #2 · No Signal'],[18.6298,73.7997,'#f97316','Truck #3 · Idle'],[19.0760,72.8777,'#16a34a','Truck #4 · Moving'],[28.6139,77.2090,'#1e3a8a','Truck #5 · Delhi']].forEach(([la,lo,c,lbl])=>{
+      L.marker([la,lo],{icon:L.divIcon({html:`<div style="background:${c};width:13px;height:13px;border-radius:50%;border:2.5px solid white;box-shadow:0 0 8px ${c}88"></div>`,className:'',iconSize:[13,13],iconAnchor:[6.5,6.5]})}).addTo(m).bindPopup(`<b style="font-family:Inter">${lbl}</b>`);
+    });
+  },200);
+}
+
+function toggleFleetView(v){ /* toggle between map/table */ }
+
+function globalSearch(val){
+  if(!val) return;
+  // Basic filter on visible data
+}
+
+// ── INIT ────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded',()=>{
+  renderDashboard();
+  initCharts();
+});
+</script>
+</body>
+</html>
