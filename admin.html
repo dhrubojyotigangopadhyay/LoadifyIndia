@@ -2,88 +2,81 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Loadify Admin | BRIN Control</title>
+    <title>Loadify Admin | Control Room</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="bg-[#f4f7fa] flex h-screen overflow-hidden">
+<body class="bg-gray-100 font-sans flex h-screen overflow-hidden">
 
-    <aside class="w-64 bg-[#1e293b] text-white flex flex-col p-6 space-y-8">
-        <h1 class="text-2xl font-black text-blue-400">Loadify India</h1>
+    <div class="w-64 bg-slate-900 text-white p-6 flex flex-col space-y-10">
+        <h1 class="text-2xl font-black text-blue-400 italic">LOADIFY BRIN</h1>
         <nav class="space-y-4 flex-1">
-            <div class="bg-blue-600 p-2 rounded cursor-pointer">📊 Dashboard</div>
-            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">👥 Owners</div>
-            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">💳 Billing</div>
-            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">⚙️ Settings</div>
+            <div class="bg-blue-600 p-3 rounded-xl font-bold">📊 Dashboard</div>
+            <div class="p-3 text-gray-400 hover:text-white cursor-pointer">👥 Owners</div>
+            <div class="p-3 text-gray-400 hover:text-white cursor-pointer">💳 Billing</div>
         </nav>
-    </aside>
+    </div>
 
-    <main class="flex-1 flex flex-col overflow-y-auto">
-        <header class="bg-white p-4 shadow-sm flex justify-between items-center px-10">
-            <h2 class="text-xl font-bold">Admin Dashboard</h2>
-            <div class="flex items-center space-x-4">
-                <input type="text" placeholder="Search Owners..." class="border p-2 rounded-lg text-sm w-64">
-                <div class="w-10 h-10 rounded-full bg-blue-100"></div>
-            </div>
+    <div class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white p-6 shadow-sm flex justify-between items-center px-12">
+            <h2 class="text-2xl font-black">Admin Command Center</h2>
+            <div class="bg-blue-100 px-4 py-2 rounded-lg text-blue-800 font-bold">Session: April 2026</div>
         </header>
 
-        <section class="p-10 space-y-8">
+        <div class="p-10 space-y-10">
             <div class="grid grid-cols-4 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-500">
-                    <p class="text-gray-400 text-sm">Total Owners</p>
-                    <h3 class="text-3xl font-bold">110</h3>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border-b-4 border-blue-500">
+                    <p class="text-gray-400 font-bold text-xs uppercase">Total Owners</p>
+                    <h3 class="text-4xl font-black">110</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-green-500">
-                    <p class="text-gray-400 text-sm">Paying Owners</p>
-                    <h3 class="text-3xl font-bold">76</h3>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border-b-4 border-green-500">
+                    <p class="text-gray-400 font-bold text-xs uppercase">Paying Users</p>
+                    <h3 class="text-4xl font-black">76</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-yellow-500">
-                    <p class="text-gray-400 text-sm">Monthly Revenue</p>
-                    <h3 class="text-3xl font-bold text-blue-700">₹2,34,560</h3>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border-b-4 border-yellow-500">
+                    <p class="text-gray-400 font-bold text-xs uppercase">Revenue</p>
+                    <h3 class="text-4xl font-black text-blue-700">₹2.34L</h3>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-red-500">
-                    <p class="text-gray-400 text-sm">On Free Trial</p>
-                    <h3 class="text-3xl font-bold">34</h3>
+                <div class="bg-white p-8 rounded-3xl shadow-sm border-b-4 border-red-500">
+                    <p class="text-gray-400 font-bold text-xs uppercase">Free Trial</p>
+                    <h3 class="text-4xl font-black">34</h3>
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h4 class="font-bold mb-4">Monthly Revenue</h4>
-                    <canvas id="revenueChart" height="200"></canvas>
+            <div class="grid grid-cols-2 gap-10">
+                <div class="bg-white p-8 rounded-3xl shadow-sm">
+                    <h4 class="font-black mb-6">Revenue Growth</h4>
+                    <canvas id="revChart"></canvas>
                 </div>
-
-                <div class="bg-white p-6 rounded-xl shadow-sm">
-                    <h4 class="font-bold mb-4">Top Owners</h4>
-                    <table class="w-full text-left text-sm">
-                        <tr class="border-b text-gray-400">
-                            <th class="py-2">Owner Name</th>
-                            <th>Trips</th>
-                            <th>Revenue</th>
-                        </tr>
-                        <tr class="border-b"><td class="py-3 font-semibold">Patrick Trucks</td><td>45</td><td>₹2,000</td></tr>
-                        <tr class="border-b"><td class="py-3 font-semibold">Rajesh Sharma</td><td>38</td><td>₹1,800</td></tr>
-                        <tr class="border-b"><td class="py-3 font-semibold">Manish Trivedi</td><td>32</td><td>₹1,500</td></tr>
+                <div class="bg-white p-8 rounded-3xl shadow-sm">
+                    <h4 class="font-black mb-6">Top Performers</h4>
+                    <table class="w-full text-left font-bold text-sm">
+                        <tr class="text-gray-400 border-b uppercase text-[10px]"><th class="pb-4">Name</th><th>Trucks</th><th>Status</th></tr>
+                        <tr class="border-b"><td class="py-4">Patrick Patel</td><td>45</td><td class="text-green-600">Active</td></tr>
+                        <tr class="border-b"><td class="py-4">Rajesh Sharma</td><td>38</td><td class="text-green-600">Active</td></tr>
+                        <tr class="border-b"><td class="py-4">Manish Trivedi</td><td>26</td><td class="text-yellow-600">Pending</td></tr>
                     </table>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </div>
 
     <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                datasets: [{
-                    label: 'Revenue',
-                    data: [12000, 19000, 15000, 25000, 22000, 30000],
-                    backgroundColor: '#3b82f6',
-                    borderRadius: 5
-                }]
-            }
-        });
+        window.onload = function() {
+            const ctx = document.getElementById('revChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [15000, 22000, 19000, 30000],
+                        backgroundColor: '#2563eb',
+                        borderRadius: 10
+                    }]
+                }
+            });
+        };
     </script>
 </body>
 </html>
