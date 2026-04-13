@@ -3,125 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loadify India | Mobile</title>
+    <title>Loadify India | Pilot Network</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .active-tab { color: #1e40af; border-top: 3px solid #1e40af; }
+        #map-mobile { height: 250px; width: 100%; z-index: 10; border-radius: 20px; }
+        .hide { display: none; }
+    </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 font-sans text-gray-900">
 
-    <div id="screen-login" class="min-h-screen flex flex-col items-center justify-center px-6">
-        <h1 class="text-3xl font-bold mb-2">Login</h1>
-        <p class="text-gray-500 mb-8">Enter your mobile number</p>
-        
+    <div id="screen-login" class="min-h-screen flex flex-col items-center justify-center p-6 bg-white">
+        <h1 class="text-4xl font-bold mb-2">Login</h1>
+        <p class="text-gray-500 mb-10 text-lg text-center">Enter your mobile number to access the Pilot Network</p>
         <div class="w-full max-w-sm space-y-4">
-            <div class="flex items-center border rounded-lg p-3 bg-white">
-                <span class="text-gray-400 mr-2">+91</span>
-                <input type="tel" id="login-phone" class="w-full outline-none text-lg" placeholder="9876543210">
+            <div class="flex items-center border-2 rounded-xl p-4 bg-gray-50">
+                <span class="text-gray-400 font-bold mr-3">+91</span>
+                <input type="tel" id="login-phone" class="w-full bg-transparent outline-none text-xl font-semibold" placeholder="9874076688">
             </div>
-            
-            <button onclick="setRole('owner')" id="role-owner" class="w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100 transition-all">I AM OWNER</button>
-            <button onclick="setRole('driver')" id="role-driver" class="w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg transition-all">I AM DRIVER</button>
-            
-            <button onclick="processLogin()" class="w-full py-4 text-blue-800 font-bold border-t mt-4">Log in</button>
+            <div class="flex gap-3">
+                <button onclick="setRole('owner')" id="role-owner" class="flex-1 p-4 rounded-xl border-2 font-bold transition-all bg-blue-800 text-white border-blue-800">I AM OWNER</button>
+                <button onclick="setRole('driver')" id="role-driver" class="flex-1 p-4 rounded-xl border-2 font-bold transition-all bg-gray-50 text-gray-500 border-gray-200">I AM PILOT</button>
+            </div>
+            <button onclick="processLogin()" class="w-full py-5 text-blue-800 font-black text-xl border-t mt-6">Log in</button>
         </div>
     </div>
 
-    <div id="screen-owner" class="hidden flex flex-col h-screen">
-        <header class="bg-white p-4 flex justify-between items-center border-b">
-            <h2 class="text-xl font-bold">LOADIFY INDIA CONTROL</h2>
-            <div class="flex space-x-2 text-gray-400"><span>🔔</span><span>⚙️</span></div>
+    <div id="screen-onboarding" class="hide min-h-screen bg-white">
+        <header class="p-5 flex items-center border-b shadow-sm">
+            <button onclick="showScreen('login')" class="text-blue-800 text-2xl mr-4">←</button>
+            <h2 class="text-2xl font-black italic">Register Fleet</h2>
         </header>
+        <div class="p-8 space-y-6">
+            <div><label class="text-gray-400 font-bold text-sm uppercase">Truck Number</label><input type="text" id="new-truck-id" placeholder="WB26-X0606" class="w-full p-4 border-2 rounded-xl mt-2 text-xl font-bold uppercase"></div>
+            <div><label class="text-gray-400 font-bold text-sm uppercase">Pilot Name</label><input type="text" id="new-pilot-name" placeholder="Enter Pilot Name" class="w-full p-4 border-2 rounded-xl mt-2 text-xl font-bold"></div>
+            <div><label class="text-gray-400 font-bold text-sm uppercase">Pilot Mobile</label><input type="tel" id="new-pilot-phone" placeholder="Pilot Mobile No" class="w-full p-4 border-2 rounded-xl mt-2 text-xl font-bold"></div>
+            <div class="bg-blue-50 p-5 rounded-2xl border-2 border-blue-100 mt-4">
+                <p class="font-black text-blue-800">✉️ Invite Pilot</p>
+                <p class="text-sm text-blue-700 mt-1 leading-tight text-xs">Send the Pilot App link via WhatsApp to begin tracking.</p>
+                <button onclick="sendWhatsAppInvite()" class="w-full bg-green-600 text-white py-4 rounded-xl mt-4 font-black shadow-lg">SEND WHATSAPP INVITE</button>
+            </div>
+            <button onclick="saveAndGoToDash()" class="w-full bg-blue-800 text-white py-5 rounded-2xl font-black text-xl shadow-xl">SAVE & CONTINUE</button>
+        </div>
+    </div>
 
+    <div id="screen-owner" class="hide flex flex-col h-screen overflow-hidden">
+        <header class="bg-white p-5 flex justify-between items-center border-b">
+            <h2 class="text-2xl font-black italic text-blue-900">LOADIFY CONTROL</h2>
+            <button onclick="showScreen('onboarding')" class="bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-bold">+ Add Pilot</button>
+        </header>
         <main class="flex-1 overflow-y-auto p-4 space-y-4">
-            <div class="flex justify-between text-sm font-semibold text-gray-600">
-                <span>5 Trucks</span> <span class="text-green-600">3 Running</span> <span>₹18,200 Today</span>
+            <div class="flex justify-between font-bold text-sm px-2 text-gray-500">
+                <span>Fleet: 5</span><span class="text-green-600">3 Moving</span><span>₹18,200 Today</span>
             </div>
-
-            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm">
-                <p class="font-bold text-blue-900">Alerts (2)</p>
-                <p class="text-blue-700">• Truck #2 → No signal (2 hrs)</p>
-            </div>
-
-            <div id="map-mobile" class="h-48 rounded-xl overflow-hidden shadow-inner"></div>
-
-            <div id="truck-cards-container" class="space-y-4">
+            <div id="map-mobile" class="shadow-lg border-2 border-white"></div>
+            <div id="truck-cards-container" class="space-y-4 pb-24">
                 </div>
         </main>
-
-        <nav class="bg-white border-t flex justify-around p-3 text-xs text-gray-400">
-            <div class="text-blue-800 font-bold text-center">📊<br>Dashboard</div>
-            <div class="text-center">🚚<br>Trips</div>
-            <div class="text-center">📈<br>Insights</div>
+        <nav class="bg-white border-t flex justify-around p-4 shadow-2xl fixed bottom-0 w-full z-50">
+            <div class="active-tab text-center px-4"><span class="text-2xl">📊</span><p class="text-[10px] font-bold">Dashboard</p></div>
+            <div class="text-gray-400 text-center px-4"><span class="text-2xl">🚚</span><p class="text-[10px] font-bold">Trips</p></div>
+            <div class="text-gray-400 text-center px-4"><span class="text-2xl">📈</span><p class="text-[10px] font-bold">Insights</p></div>
         </nav>
     </div>
 
-    <div id="screen-driver" class="hidden min-h-screen bg-gray-50 flex flex-col">
-        <header class="p-4 text-center font-bold border-b bg-white">LOADIFY DRIVER</header>
-        <div class="p-6 space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
-                <p class="text-gray-400">Trip Assigned</p>
-                <h3 class="text-xl font-bold my-2">📍 Pune → Mumbai</h3>
-                <p class="text-green-600 font-bold">₹12,000</p>
-                <p class="text-sm text-gray-500">Pickup: Today</p>
+    <div id="screen-driver" class="hide min-h-screen bg-gray-50 flex flex-col">
+        <header class="p-6 text-center font-black text-blue-900 text-xl border-b bg-white italic underline">PILOT COMMAND CONSOLE</header>
+        <div class="p-8 space-y-8 flex-1 flex flex-col justify-center">
+            <div class="bg-white p-8 rounded-[40px] shadow-2xl border-2 text-center relative">
+                <p class="text-gray-400 font-bold uppercase text-xs tracking-widest">Active Flight Assigned</p>
+                <h3 id="driver-truck" class="text-4xl font-black my-4 text-blue-900">WB26-X0606</h3>
+                <div class="flex justify-between items-center bg-blue-50 p-5 rounded-3xl">
+                    <span class="font-bold text-blue-400 italic">Expected Freight:</span>
+                    <span class="text-3xl font-black text-green-600">₹12,000</span>
+                </div>
             </div>
-            <button id="btn-start-trip" onclick="toggleTrip()" class="w-full bg-blue-800 text-white py-5 rounded-xl font-bold text-lg shadow-xl">START TRIP</button>
+            <button id="main-trip-btn" onclick="toggleTrip()" class="w-full bg-blue-800 text-white py-8 rounded-[40px] font-black text-3xl shadow-2xl transition-all active:scale-95">START TRIP</button>
+            <p class="text-center text-gray-400 font-bold">GPS Data will transmit to Loadify Admin ↗</p>
         </div>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script>
-        let selectedRole = 'driver'; 
-        const API = "https://loadifyindia.onrender.com";
-
-        function setRole(r) {
-            selectedRole = r;
-            document.getElementById('role-owner').className = r === 'owner' ? "w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg" : "w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100";
-            document.getElementById('role-driver').className = r === 'driver' ? "w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg" : "w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100";
-        }
-
-        function processLogin() {
-            const phone = document.getElementById('login-phone').value;
-            document.getElementById('screen-login').classList.add('hidden');
-            if (selectedRole === 'owner') {
-                document.getElementById('screen-owner').classList.remove('hidden');
-                initOwner();
-            } else {
-                document.getElementById('screen-driver').classList.remove('hidden');
-            }
-        }
-
-        function initOwner() {
-            const map = L.map('map-mobile').setView([18.5204, 73.8567], 7);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            refreshFleet();
-        }
-
-        async function refreshFleet() {
-            const res = await fetch(API + "/dashboard");
-            const data = await res.json();
-            const container = document.getElementById('truck-cards-container');
-            container.innerHTML = '';
-            data.forEach(t => {
-                container.innerHTML += `
-                    <div class="bg-white p-4 rounded-xl border shadow-sm">
-                        <div class="flex justify-between items-start mb-2">
-                            <div>
-                                <h4 class="font-bold text-lg">${t.truck_id}</h4>
-                                <p class="text-xs text-green-600">● In Transit</p>
-                            </div>
-                            <div class="flex space-x-2">
-                                <button class="text-xs bg-gray-100 px-3 py-1 rounded">📞 CALL</button>
-                                <button class="text-xs bg-gray-100 px-3 py-1 rounded">✉️ MSG</button>
-                            </div>
-                        </div>
-                        <div class="flex justify-between text-sm text-gray-500">
-                            <span>📍 Current: Mumbai</span>
-                            <span class="font-bold text-black">₹12,000 trip</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
