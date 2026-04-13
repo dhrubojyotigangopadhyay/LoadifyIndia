@@ -1,223 +1,212 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Loadify India</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
-.screen{display:none;flex-direction:column;min-height:100vh;background:#fff}
-.screen.active{display:flex}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Loadify India</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+        body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430px;margin:0 auto;min-height:100vh;position:relative;overflow-x:hidden}
+        .screen{display:none;flex-direction:column;min-height:100vh;background:#fff}
+        .screen.active{display:flex}
 
-/* ── TOAST ── */
-#toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
-#toast.show{opacity:1}
+        /* TOAST */
+        #toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap}
+        #toast.show{opacity:1}
 
-/* ── MAP ── */
-#map-owner{height:200px;width:100%;z-index:1}
-#map-truck{height:180px;width:100%;border-radius:12px;overflow:hidden;z-index:1}
+        /* MAP */
+        #map-owner{height:200px;width:100%;z-index:1}
+        #map-truck{height:180px;width:100%;border-radius:12px;overflow:hidden;z-index:1}
 
-/* ── LOGIN ── */
-.login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:60px 32px 0}
-.login-title{font-size:28px;font-weight:700;margin-bottom:6px}
-.login-sub{font-size:14px;color:#888;margin-bottom:32px}
-.phone-row{display:flex;align-items:center;border:1.5px solid #ddd;border-radius:10px;padding:14px 16px;width:100%;margin-bottom:12px;background:#fff;gap:12px}
-.phone-cc{font-size:16px;font-weight:600;color:#333;border-right:1.5px solid #eee;padding-right:12px}
-.phone-row input{flex:1;border:none;outline:none;font-size:18px;font-weight:600;font-family:inherit;color:#111}
-.role-btn{width:100%;padding:16px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;margin-bottom:10px}
-.role-btn.owner{background:#e8eaf0;color:#444}
-.role-btn.driver{background:#1e3a8a;color:#fff}
-.role-btn.selected-owner{background:#1e3a8a;color:#fff}
-.login-footer{margin-top:auto;padding:20px;text-align:center;font-size:12px;color:#aaa}
-.login-dash-link{display:block;text-align:center;color:#1e3a8a;font-weight:600;font-size:15px;padding:16px;text-decoration:none;cursor:pointer}
-.numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#e5e5e5;border-top:1px solid #e5e5e5;margin-top:auto}
-.numpad-btn{background:#fff;padding:18px;text-align:center;font-size:20px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:background 0.1s}
-.numpad-btn:active{background:#f0f0f0}
-.numpad-sub{font-size:9px;color:#888;display:block;margin-top:2px;letter-spacing:1px}
+        /* LOGIN */
+        .login-wrap{flex:1;display:flex;flex-direction:column;align-items:center;padding:60px 32px 0}
+        .login-title{font-size:28px;font-weight:700;margin-bottom:6px}
+        .login-sub{font-size:14px;color:#888;margin-bottom:32px}
+        .phone-row{display:flex;align-items:center;border:1.5px solid #ddd;border-radius:10px;padding:14px 16px;width:100%;margin-bottom:12px;background:#fff;gap:12px}
+        .phone-cc{font-size:16px;font-weight:600;color:#333;border-right:1.5px solid #eee;padding-right:12px}
+        .phone-row input{flex:1;border:none;outline:none;font-size:18px;font-weight:600;font-family:inherit;color:#111}
+        .role-btn{width:100%;padding:16px;border-radius:10px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.2s;font-family:inherit;margin-bottom:10px}
+        .role-btn.owner{background:#e8eaf0;color:#444}
+        .role-btn.driver{background:#1e3a8a;color:#fff}
+        .role-btn.selected-owner{background:#1e3a8a;color:#fff}
+        .login-footer{margin-top:auto;padding:20px;text-align:center;font-size:12px;color:#aaa}
+        .login-dash-link{display:block;text-align:center;color:#1e3a8a;font-weight:600;font-size:15px;padding:16px;text-decoration:none;cursor:pointer}
+        .numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#e5e5e5;border-top:1px solid #e5e5e5;margin-top:auto}
+        .numpad-btn{background:#fff;padding:18px;text-align:center;font-size:20px;font-weight:500;cursor:pointer;font-family:inherit;border:none;transition:background 0.1s}
+        .numpad-btn:active{background:#f0f0f0}
+        .numpad-sub{font-size:9px;color:#888;display:block;margin-top:2px;letter-spacing:1px}
 
-/* ── OWNER DASHBOARD ── */
-.owner-header{padding:12px 16px 0;display:flex;justify-content:space-between;align-items:center;background:#fff}
-.owner-header h1{font-size:18px;font-weight:800;letter-spacing:-0.3px}
-.header-icons{display:flex;gap:12px;align-items:center}
-.notif-btn{position:relative;background:none;border:none;font-size:22px;cursor:pointer}
-.notif-badge{position:absolute;top:-2px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
-.stat-bar{display:flex;gap:0;padding:10px 16px;background:#fff;border-bottom:1px solid #f0f0f0}
-.stat-item{flex:1;text-align:center}
-.stat-val{font-size:15px;font-weight:800;color:#111}
-.stat-val.green{color:#16a34a}
-.stat-val.blue{color:#1e3a8a}
-.stat-lbl{font-size:11px;color:#999;font-weight:500;margin-top:1px}
-.stat-sep{width:1px;background:#eee;margin:4px 0}
+        /* OWNER DASHBOARD */
+        .owner-header{padding:12px 16px 0;display:flex;justify-content:space-between;align-items:center;background:#fff}
+        .owner-header h1{font-size:18px;font-weight:800;letter-spacing:-0.3px}
+        .header-icons{display:flex;gap:12px;align-items:center}
+        .notif-btn{position:relative;background:none;border:none;font-size:22px;cursor:pointer}
+        .notif-badge{position:absolute;top:-2px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .stat-bar{display:flex;gap:0;padding:10px 16px;background:#fff;border-bottom:1px solid #f0f0f0}
+        .stat-item{flex:1;text-align:center}
+        .stat-val{font-size:15px;font-weight:800;color:#111}
+        .stat-val.green{color:#16a34a}
+        .stat-val.blue{color:#1e3a8a}
+        .stat-lbl{font-size:11px;color:#999;font-weight:500;margin-top:1px}
+        .stat-sep{width:1px;background:#eee;margin:4px 0}
 
-/* Alerts */
-.alerts-bar{background:#fffbeb;border-bottom:1px solid #fde68a;padding:8px 16px}
-.alerts-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.alerts-title{font-size:12px;font-weight:700;color:#92400e}
-.alerts-view{font-size:11px;color:#1e3a8a;font-weight:600}
-.alert-item{font-size:12px;color:#78350f;margin-bottom:3px;display:flex;align-items:center;gap:6px}
-.dot-red{width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0}
-.dot-orange{width:7px;height:7px;border-radius:50%;background:#f97316;flex-shrink:0}
+        .alerts-bar{background:#fffbeb;border-bottom:1px solid #fde68a;padding:8px 16px}
+        .alerts-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+        .alerts-title{font-size:12px;font-weight:700;color:#92400e}
+        .alerts-view{font-size:11px;color:#1e3a8a;font-weight:600;cursor:pointer}
+        .alert-item{font-size:12px;color:#78350f;margin-bottom:3px;display:flex;align-items:center;gap:6px}
+        .dot-red{width:7px;height:7px;border-radius:50%;background:#ef4444;flex-shrink:0}
+        .dot-orange{width:7px;height:7px;border-radius:50%;background:#f97316;flex-shrink:0}
 
-/* Truck cards */
-.truck-list{flex:1;overflow-y:auto;padding:12px 16px 80px}
-.truck-card{background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s}
-.truck-card:active{box-shadow:0 4px 20px rgba(0,0,0,0.08)}
-.tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
-.tc-name{font-size:16px;font-weight:800}
-.tc-actions{display:flex;gap:8px}
-.tc-btn{padding:6px 12px;border-radius:8px;border:1px solid #e5e5e5;background:#f9f9f9;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
-.tc-btn:active{background:#eee}
-.tc-status{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:6px}
-.tc-route{font-size:12px;color:#666;display:flex;align-items:center;gap:4px;margin-bottom:4px}
-.tc-update{font-size:11px;color:#aaa;margin-bottom:8px}
-.tc-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f5f5f5}
-.tc-trip{font-size:14px;font-weight:800;color:#1e3a8a}
-.tc-idle{font-size:12px;font-weight:700;color:#f97316}
+        .truck-list{flex:1;overflow-y:auto;padding:12px 16px 80px}
+        .truck-card{background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:14px;margin-bottom:10px;cursor:pointer;transition:box-shadow 0.15s}
+        .truck-card:active{box-shadow:0 4px 20px rgba(0,0,0,0.08)}
+        .tc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+        .tc-name{font-size:16px;font-weight:800}
+        .tc-actions{display:flex;gap:8px}
+        .tc-btn{padding:6px 12px;border-radius:8px;border:1px solid #e5e5e5;background:#f9f9f9;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:4px}
+        .tc-btn:active{background:#eee}
+        .tc-status{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:600;margin-bottom:6px}
+        .tc-route{font-size:12px;color:#666;display:flex;align-items:center;gap:4px;margin-bottom:4px}
+        .tc-update{font-size:11px;color:#aaa;margin-bottom:8px}
+        .tc-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #f5f5f5}
+        .tc-trip{font-size:14px;font-weight:800;color:#1e3a8a}
 
-/* Status colors */
-.status-green{color:#16a34a}.status-red{color:#ef4444}.status-orange{color:#f97316}
-.dot-green{background:#16a34a}.dot-blue{background:#1e3a8a}.dot-orange-c{background:#f97316}
+        .status-green{color:#16a34a}.status-red{color:#ef4444}.status-orange{color:#f97316}
+        .dot-green{background:#16a34a}.dot-blue{background:#1e3a8a}.dot-orange-c{background:#f97316}
 
-/* Bottom nav */
-.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #ebebeb;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
-.nav-item{flex:1;padding:10px 0 8px;text-align:center;cursor:pointer;transition:color 0.2s}
-.nav-item.active .nav-icon{color:#1e3a8a}
-.nav-item.active .nav-label{color:#1e3a8a;font-weight:700}
-.nav-icon{font-size:22px;display:block}
-.nav-label{font-size:10px;font-weight:500;color:#999;margin-top:3px;display:block}
-.add-truck-btn{position:fixed;bottom:70px;right:calc(50% - 215px + 16px);background:#1e3a8a;color:#fff;width:52px;height:52px;border-radius:50%;font-size:28px;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(30,58,138,0.35);cursor:pointer;z-index:101;border:none}
+        .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid #ebebeb;display:flex;z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+        .nav-item{flex:1;padding:10px 0 8px;text-align:center;cursor:pointer;transition:color 0.2s}
+        .nav-item.active .nav-icon{color:#1e3a8a}
+        .nav-item.active .nav-label{color:#1e3a8a;font-weight:700}
+        .nav-icon{font-size:22px;display:block}
+        .nav-label{font-size:10px;font-weight:500;color:#999;margin-top:3px;display:block}
+        .add-truck-btn{position:fixed;bottom:70px;right:calc(50% - 215px + 16px);background:#1e3a8a;color:#fff;width:52px;height:52px;border-radius:50%;font-size:28px;font-weight:300;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(30,58,138,0.35);cursor:pointer;z-index:101;border:none}
 
-/* ── TRUCK DETAIL ── */
-.detail-header{display:flex;justify-content:space-between;align-items:center;padding:16px}
-.back-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#111;padding:0}
-.more-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#888}
-.detail-truck-name{font-size:22px;font-weight:800}
-.detail-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin:2px 0 0}
-.detail-map-wrap{margin:0 16px;border-radius:12px;overflow:hidden;border:1px solid #eee}
-.detail-info{padding:14px 16px;background:#fff;margin-top:2px}
-.detail-truck-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #f5f5f5}
-.dtr-left h3{font-size:15px;font-weight:700}
-.dtr-left p{font-size:12px;color:#666;margin-top:3px}
-.dtr-left .update{font-size:11px;color:#aaa;margin-top:2px}
-.dtr-right{text-align:right}
-.dtr-right .trip-val{font-size:15px;font-weight:800;color:#1e3a8a}
-.dtr-right .eta{font-size:12px;color:#999;margin-top:3px}
+        /* TRUCK DETAIL */
+        .detail-header{display:flex;justify-content:space-between;align-items:center;padding:16px}
+        .back-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#111;padding:0}
+        .more-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#888}
+        .detail-truck-name{font-size:22px;font-weight:800}
+        .detail-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;margin:2px 0 0}
+        .detail-map-wrap{margin:0 16px;border-radius:12px;overflow:hidden;border:1px solid #eee}
+        .detail-truck-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 16px;border-bottom:1px solid #f5f5f5}
+        .dtr-left h3{font-size:15px;font-weight:700}
+        .dtr-left p{font-size:12px;color:#666;margin-top:3px}
+        .dtr-left .update{font-size:11px;color:#aaa;margin-top:2px}
+        .dtr-right{text-align:right}
+        .dtr-right .trip-val{font-size:15px;font-weight:800;color:#1e3a8a}
+        .dtr-right .eta{font-size:12px;color:#999;margin-top:3px}
 
-/* ── ADD TRUCK ── */
-.add-header{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0}
-.add-header h2{font-size:20px;font-weight:800}
-.add-save-link{color:#1e3a8a;font-weight:700;font-size:15px;cursor:pointer}
-.form-group{padding:0 16px;margin-bottom:16px}
-.form-label{font-size:12px;font-weight:600;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
-.form-input{width:100%;padding:14px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:16px;font-weight:600;font-family:inherit;outline:none;transition:border-color 0.2s}
-.form-input:focus{border-color:#1e3a8a}
-.invite-box{margin:0 16px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:16px}
-.invite-box h3{font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px}
-.invite-box p{font-size:12px;color:#a16207;margin-bottom:12px}
-.whatsapp-btn{width:100%;background:#16a34a;color:#fff;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
-.whatsapp-btn:active{background:#15803d}
-.save-fleet-btn{margin:0 16px;width:calc(100% - 32px);background:#1e3a8a;color:#fff;border:none;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
-.save-fleet-btn:active{background:#1e40af}
+        /* ADD TRUCK */
+        .add-header{display:flex;justify-content:space-between;align-items:center;padding:16px 16px 0}
+        .add-header h2{font-size:20px;font-weight:800}
+        .add-save-link{color:#1e3a8a;font-weight:700;font-size:15px;cursor:pointer}
+        .form-group{padding:0 16px;margin-bottom:16px}
+        .form-label{font-size:12px;font-weight:600;color:#888;margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:0.5px}
+        .form-input{width:100%;padding:14px 16px;border:1.5px solid #e5e5e5;border-radius:10px;font-size:16px;font-weight:600;font-family:inherit;outline:none;transition:border-color 0.2s}
+        .form-input:focus{border-color:#1e3a8a}
+        .invite-box{margin:0 16px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:16px;margin-bottom:16px}
+        .invite-box h3{font-size:14px;font-weight:700;color:#92400e;margin-bottom:4px}
+        .invite-box p{font-size:12px;color:#a16207;margin-bottom:12px}
+        .whatsapp-btn{width:100%;background:#16a34a;color:#fff;border:none;padding:14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+        .whatsapp-btn:active{background:#15803d}
+        .save-fleet-btn{margin:0 16px;width:calc(100% - 32px);background:#1e3a8a;color:#fff;border:none;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit}
+        .save-fleet-btn:active{background:#1e40af}
 
-/* ── CREATE TRIP ── */
-.create-trip-header{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #f0f0f0}
-.ct-body{padding:16px;flex:1;overflow-y:auto;padding-bottom:80px}
-.ct-status-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.ct-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#16a34a}
-.ct-date-nav{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#888}
-.ct-section{margin-bottom:14px}
-.ct-row{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:10px}
-.ct-row-icon{width:44px;height:48px;display:flex;align-items:center;justify-content:center;font-size:18px;border-right:1.5px solid #e5e5e5;background:#f9f9f9}
-.ct-row input{flex:1;border:none;outline:none;padding:13px 14px;font-size:15px;font-weight:600;font-family:inherit}
-.ct-truck-select{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px;justify-content:space-between;cursor:pointer}
-.ct-truck-select span{font-size:15px;font-weight:700}
-.ct-truck-select small{color:#999;font-size:13px}
-.ct-freight-row{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:14px}
-.ct-freight-lbl{font-size:14px;font-weight:600;color:#555;flex:1}
-.ct-freight-val{font-size:15px;font-weight:800}
-.ct-freight-input{border:none;outline:none;font-size:15px;font-weight:800;text-align:right;font-family:inherit;width:100px}
-.driver-select-box{border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:16px}
-.driver-avatar{width:38px;height:38px;border-radius:50%;background:#e8eaf0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.driver-info h4{font-size:14px;font-weight:700}
-.driver-info p{font-size:12px;color:#888}
-.assign-btn{width:100%;background:#1e3a8a;color:#fff;border:none;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
-.assign-btn:active{background:#1e40af}
+        /* CREATE TRIP */
+        .create-trip-header{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid #f0f0f0}
+        .ct-body{padding:16px;flex:1;overflow-y:auto;padding-bottom:80px}
+        .ct-status-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+        .ct-status{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:#16a34a}
+        .ct-date-nav{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:#888}
+        .ct-row{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;overflow:hidden;margin-bottom:10px}
+        .ct-row-icon{width:44px;height:48px;display:flex;align-items:center;justify-content:center;font-size:18px;border-right:1.5px solid #e5e5e5;background:#f9f9f9}
+        .ct-row input{flex:1;border:none;outline:none;padding:13px 14px;font-size:15px;font-weight:600;font-family:inherit}
+        .ct-truck-select{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:10px;justify-content:space-between;cursor:pointer}
+        .ct-truck-select span{font-size:15px;font-weight:700}
+        .ct-truck-select small{color:#999;font-size:13px}
+        .ct-freight-row{display:flex;align-items:center;border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;margin-bottom:14px}
+        .ct-freight-lbl{font-size:14px;font-weight:600;color:#555;flex:1}
+        .ct-freight-input{border:none;outline:none;font-size:15px;font-weight:800;text-align:right;font-family:inherit;width:100px}
+        .driver-select-box{border:1.5px solid #e5e5e5;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer;margin-bottom:16px}
+        .driver-avatar{width:38px;height:38px;border-radius:50%;background:#e8eaf0;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+        .driver-info h4{font-size:14px;font-weight:700}
+        .driver-info p{font-size:12px;color:#888}
+        .assign-btn{width:100%;background:#1e3a8a;color:#fff;border:none;padding:16px;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+        .assign-btn:active{background:#1e40af}
 
-/* ── TRIPS LIST ── */
-.trips-header{padding:16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0}
-.trips-header h1{font-size:22px;font-weight:800}
-.tab-bar{display:flex;padding:0 16px;gap:8px;border-bottom:1px solid #f0f0f0;margin-bottom:0}
-.tab{padding:10px 16px;font-size:13px;font-weight:600;color:#999;border-bottom:2px solid transparent;cursor:pointer}
-.tab.active{color:#111;border-bottom-color:#111}
-.trip-item{padding:14px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer}
-.trip-item:active{background:#fafafa}
-.ti-top{display:flex;justify-content:space-between;margin-bottom:6px}
-.ti-truck{font-size:14px;font-weight:800}
-.ti-route{font-size:11px;color:#888;font-weight:500;margin-left:6px}
-.ti-val{font-size:14px;font-weight:800;color:#1e3a8a}
-.ti-meta{font-size:12px;color:#888;margin-bottom:4px}
-.ti-driver{display:flex;align-items:center;gap:6px;font-size:12px;color:#666;font-weight:500}
-.ti-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
-.ti-tag.ongoing{background:#dcfce7;color:#16a34a}
-.ti-tag.past{background:#f3f4f6;color:#666}
+        /* TRIPS LIST */
+        .trips-header{padding:16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #f0f0f0}
+        .trips-header h1{font-size:22px;font-weight:800}
+        .tab-bar{display:flex;padding:0 16px;gap:8px;border-bottom:1px solid #f0f0f0;margin-bottom:0}
+        .tab{padding:10px 16px;font-size:13px;font-weight:600;color:#999;border-bottom:2px solid transparent;cursor:pointer}
+        .tab.active{color:#111;border-bottom-color:#111}
+        .trip-item{padding:14px 16px;border-bottom:1px solid #f5f5f5;cursor:pointer}
+        .trip-item:active{background:#fafafa}
+        .ti-top{display:flex;justify-content:space-between;margin-bottom:6px}
+        .ti-truck{font-size:14px;font-weight:800}
+        .ti-route{font-size:11px;color:#888;font-weight:500;margin-left:6px}
+        .ti-val{font-size:14px;font-weight:800;color:#1e3a8a}
+        .ti-meta{font-size:12px;color:#888;margin-bottom:4px}
+        .ti-driver{display:flex;align-items:center;gap:6px;font-size:12px;color:#666;font-weight:500}
+        .ti-tag{font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px}
+        .ti-tag.ongoing{background:#dcfce7;color:#16a34a}
+        .ti-tag.past{background:#f3f4f6;color:#666}
 
-/* ── INSIGHTS ── */
-.insights-section{padding:16px}
-.insights-title{font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.insight-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:500}
-.insight-item:last-child{border-bottom:none}
+        /* INSIGHTS */
+        .insights-section{padding:16px}
+        .insights-title{font-size:16px;font-weight:800;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+        .insight-item{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid #f5f5f5;font-size:13px;font-weight:500}
+        .insight-item:last-child{border-bottom:none}
 
-/* ── DRIVER APP ── */
-.driver-header{background:#fff;padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
-.driver-header h1{font-size:17px;font-weight:800;letter-spacing:0.3px}
-.no-trip-card{margin:16px;background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:24px;text-align:center}
-.no-trip-card h2{font-size:18px;font-weight:800;margin-bottom:6px}
-.no-trip-card p{font-size:13px;color:#888}
-.no-trip-loader{margin:16px auto;width:32px;height:32px;border:3px solid #e5e5e5;border-top-color:#1e3a8a;border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-.trip-assigned-card{margin:16px;background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden}
-.trip-assigned-label{background:#f0fdf4;padding:12px 16px;font-size:12px;font-weight:700;color:#16a34a;border-bottom:1px solid #dcfce7}
-.trip-detail-row{padding:14px 16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:12px}
-.trip-detail-row:last-child{border-bottom:none}
-.trip-icon{font-size:20px;width:28px;text-align:center}
-.trip-route-text{font-size:18px;font-weight:800}
-.trip-freight{font-size:20px;font-weight:800}
-.trip-pickup{font-size:13px;color:#666}
-.start-trip-btn{margin:0 16px 12px;width:calc(100% - 32px);background:#1e3a8a;color:#fff;border:none;padding:18px;border-radius:10px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.3px}
-.start-trip-btn:active{background:#1e40af}
-.start-trip-btn.active{background:#dc2626}
-.driver-next{text-align:center;font-size:13px;color:#1e3a8a;font-weight:600;padding:8px 16px 16px;cursor:pointer}
+        /* DRIVER APP */
+        .driver-header{background:#fff;padding:16px;border-bottom:1px solid #f0f0f0;display:flex;justify-content:space-between;align-items:center}
+        .driver-header h1{font-size:17px;font-weight:800;letter-spacing:0.3px}
+        .no-trip-card{margin:16px;background:#fff;border:1px solid #ebebeb;border-radius:14px;padding:24px;text-align:center}
+        .no-trip-card h2{font-size:18px;font-weight:800;margin-bottom:6px}
+        .no-trip-card p{font-size:13px;color:#888}
+        .no-trip-loader{margin:16px auto;width:32px;height:32px;border:3px solid #e5e5e5;border-top-color:#1e3a8a;border-radius:50%;animation:spin 1s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .trip-assigned-card{margin:16px;background:#fff;border:1px solid #ebebeb;border-radius:14px;overflow:hidden}
+        .trip-assigned-label{background:#f0fdf4;padding:12px 16px;font-size:12px;font-weight:700;color:#16a34a;border-bottom:1px solid #dcfce7}
+        .trip-detail-row{padding:14px 16px;border-bottom:1px solid #f5f5f5;display:flex;align-items:center;gap:12px}
+        .trip-detail-row:last-child{border-bottom:none}
+        .trip-icon{font-size:20px;width:28px;text-align:center}
+        .trip-route-text{font-size:18px;font-weight:800}
+        .trip-freight{font-size:20px;font-weight:800}
+        .trip-pickup{font-size:13px;color:#666}
+        .start-trip-btn{margin:0 16px 12px;width:calc(100% - 32px);background:#1e3a8a;color:#fff;border:none;padding:18px;border-radius:10px;font-size:17px;font-weight:800;cursor:pointer;font-family:inherit;letter-spacing:0.3px}
+        .start-trip-btn:active{background:#1e40af}
+        .start-trip-btn.active{background:#dc2626}
+        .driver-next{text-align:center;font-size:13px;color:#1e3a8a;font-weight:600;padding:8px 16px 16px;cursor:pointer}
 
-/* GPS live bar */
-.gps-bar{margin:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
-.gps-bar.error{background:#fef2f2;border-color:#fecaca}
-.gps-dot-live{width:10px;height:10px;border-radius:50%;background:#16a34a;animation:gpspulse 1.5s ease infinite}
-.gps-bar.error .gps-dot-live{background:#ef4444;animation:none}
-@keyframes gpspulse{0%,100%{opacity:1}50%{opacity:0.4}}
-.gps-text{font-size:12px;font-weight:600;color:#166534}
-.gps-bar.error .gps-text{color:#dc2626}
-.live-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 16px 12px}
-.ls-card{background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:12px;text-align:center}
-.ls-val{font-size:22px;font-weight:800}
-.ls-lbl{font-size:10px;color:#999;font-weight:600;text-transform:uppercase;margin-top:3px}
-.sos-row{display:flex;gap:10px;margin:0 16px 12px}
-.sos-call{flex:1;background:#f9f9f9;border:1px solid #eee;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
-.sos-btn{flex:1;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;font-size:14px;font-weight:700;color:#dc2626;cursor:pointer;font-family:inherit;text-align:center}
+        .gps-bar{margin:12px 16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+        .gps-bar.error{background:#fef2f2;border-color:#fecaca}
+        .gps-dot-live{width:10px;height:10px;border-radius:50%;background:#16a34a;animation:gpspulse 1.5s ease infinite}
+        .gps-bar.error .gps-dot-live{background:#ef4444;animation:none}
+        @keyframes gpspulse{0%,100%{opacity:1}50%{opacity:0.4}}
+        .gps-text{font-size:12px;font-weight:600;color:#166534}
+        .gps-bar.error .gps-text{color:#dc2626}
+        .live-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:0 16px 12px}
+        .ls-card{background:#fff;border:1px solid #ebebeb;border-radius:12px;padding:12px;text-align:center}
+        .ls-val{font-size:22px;font-weight:800}
+        .ls-lbl{font-size:10px;color:#999;font-weight:600;text-transform:uppercase;margin-top:3px}
+        .sos-row{display:flex;gap:10px;margin:0 16px 12px}
+        .sos-call{flex:1;background:#f9f9f9;border:1px solid #eee;border-radius:10px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;text-align:center}
+        .sos-btn{flex:1;background:#fef2f2;border:1px solid #fecaca;border-radius:10px;padding:14px;font-size:14px;font-weight:700;color:#dc2626;cursor:pointer;font-family:inherit;text-align:center}
 
-@media(max-width:375px){.stat-val{font-size:13px}}
-</style>
+        @media(max-width:375px){.stat-val{font-size:13px}}
+    </style>
 </head>
 <body>
 
 <div id="toast"></div>
 
-<!-- ══════════════════════════════
-     LOGIN
-══════════════════════════════ -->
+<!-- LOGIN -->
 <div id="screen-login" class="screen active">
   <div class="login-wrap">
     <h1 class="login-title">Login</h1>
@@ -229,7 +218,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
     <button id="role-owner" class="role-btn owner" onclick="setRole('owner')">I AM OWNER</button>
     <button id="role-driver" class="role-btn driver" onclick="setRole('driver')">I AM DRIVER</button>
   </div>
-  <div class="login-footer">© 2024 Loadify India</div>
+  <div class="login-footer">© 2026 Loadify India</div>
   <div class="login-dash-link" onclick="processLogin()">Log in</div>
   <div class="numpad">
     <button class="numpad-btn" onclick="numpadInput('1')">1</button>
@@ -247,9 +236,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     OWNER DASHBOARD
-══════════════════════════════ -->
+<!-- OWNER DASHBOARD -->
 <div id="screen-owner" class="screen">
   <div class="owner-header">
     <h1>LOADIFY INDIA CONTROL</h1>
@@ -283,9 +270,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </nav>
 </div>
 
-<!-- ══════════════════════════════
-     TRUCK DETAIL
-══════════════════════════════ -->
+<!-- TRUCK DETAIL -->
 <div id="screen-truck-detail" class="screen">
   <div class="detail-header">
     <button class="back-btn" onclick="goBack('owner')">‹</button>
@@ -299,9 +284,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   <div id="detail-truck-cards" style="flex:1;overflow-y:auto;padding-bottom:20px"></div>
 </div>
 
-<!-- ══════════════════════════════
-     ADD TRUCK
-══════════════════════════════ -->
+<!-- ADD TRUCK -->
 <div id="screen-add-truck" class="screen">
   <div class="add-header">
     <button class="back-btn" onclick="goBack('owner')">‹</button>
@@ -321,9 +304,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     CREATE TRIP
-══════════════════════════════ -->
+<!-- CREATE TRIP -->
 <div id="screen-create-trip" class="screen">
   <div class="create-trip-header">
     <button class="back-btn" onclick="goBack('owner')">‹</button>
@@ -365,9 +346,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </div>
 </div>
 
-<!-- ══════════════════════════════
-     TRIPS LIST
-══════════════════════════════ -->
+<!-- TRIPS LIST -->
 <div id="screen-trips" class="screen">
   <div class="trips-header">
     <h1>Trips</h1>
@@ -375,7 +354,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </div>
   <div class="tab-bar">
     <div class="tab active" onclick="tripsTab('today',this)">Today</div>
-    <div class="tab" onclick="tripsTab('ongoing',this)">Today</div>
+    <div class="tab" onclick="tripsTab('ongoing',this)">Ongoing</div>
     <div class="tab" onclick="tripsTab('past',this)">Past</div>
   </div>
   <div style="padding:8px 16px;font-size:12px;font-weight:700;color:#666">Ongoing 21</div>
@@ -387,9 +366,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </nav>
 </div>
 
-<!-- ══════════════════════════════
-     INSIGHTS
-══════════════════════════════ -->
+<!-- INSIGHTS -->
 <div id="screen-insights" class="screen">
   <div class="trips-header"><h1>Insights</h1></div>
   <div class="tab-bar">
@@ -400,6 +377,7 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   <div style="flex:1;overflow-y:auto;padding-bottom:80px">
     <div class="insights-section">
       <div class="insights-title">📊 Insights <span style="font-size:13px;font-weight:500;color:#888">(Last 7 Days)</span></div>
+      <button onclick="runAIInsights()" style="margin-bottom:12px;padding:12px;width:100%;background:#1e3a8a;color:#fff;border:none;border-radius:10px;font-weight:700;">🧠 Generate AI Insights</button>
       <div class="insight-item"><div class="dot-green" style="width:9px;height:9px;border-radius:50%;background:#16a34a;flex-shrink:0"></div>2 trucks delayed frequently</div>
       <div class="insight-item"><div style="width:9px;height:9px;border-radius:50%;background:#f97316;flex-shrink:0"></div>Avg idle time: 1:15 hrs</div>
       <div class="insight-item"><div style="width:9px;height:9px;border-radius:50%;background:#ef4444;flex-shrink:0"></div>Truck #2 has signal issues</div>
@@ -412,16 +390,13 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
   </nav>
 </div>
 
-<!-- ══════════════════════════════
-     DRIVER APP
-══════════════════════════════ -->
+<!-- DRIVER APP -->
 <div id="screen-driver" class="screen">
   <div class="driver-header">
     <h1>LOADIFY DRIVER</h1>
     <span style="font-size:22px">🚛</span>
   </div>
 
-  <!-- No active trip (loading state) -->
   <div id="driver-waiting" style="display:block">
     <div class="no-trip-card">
       <h2>No active trip</h2>
@@ -447,7 +422,6 @@ body{font-family:'Inter',sans-serif;background:#f5f5f5;color:#111;max-width:430p
     <div class="driver-next" onclick="toast('Navigation opening...')">Next: Mumbai ↗</div>
   </div>
 
-  <!-- Active trip state -->
   <div id="driver-active" style="display:none">
     <div class="gps-bar" id="gps-bar">
       <div class="gps-dot-live"></div>
@@ -483,19 +457,7 @@ let lastLat = null, lastLng = null, totalKm = 0;
 let currentScreen = 'login';
 
 // ── DEMO DATA ─────────────────────────────────────────
-const FLEET = [
-  { id:'Truck #1', truck:'MH12X22313', lat:18.5204, lng:73.8567, speed:62, status:'In Transit', route:'Pune → Mumbai', update:'2 min ago', trip:12000, driver:'Rajesh Sharma', phone:'9876543210', signal:'Active' },
-  { id:'Truck #2', truck:'MH12X22314', lat:20.0059, lng:73.7799, speed:0,  status:'No Signal', route:'Last: Nashik',  update:'5 min ago', trip:12000, driver:'Suresh Singh',  phone:'9876540000', signal:'Lost' },
-  { id:'Truck #3', truck:'WB26X0606',  lat:18.6298, lng:73.7997, speed:0,  status:'Idle 16 min', route:'Pune → Surat',  update:'5 min ago', trip:10500, driver:'Dinesh Yadav',  phone:'9876541111', signal:'Active' },
-  { id:'Truck #4', truck:'MH12CD9900', lat:19.0760, lng:72.8777, speed:55, status:'In Transit', route:'Mumbai → Delhi', update:'1 min ago', trip:18000, driver:'Arjun Patil',   phone:'9876542222', signal:'Active' },
-  { id:'Truck #5', truck:'DL01AB5678', lat:28.6139, lng:77.2090, speed:0,  status:'Stopped',   route:'Delhi depot',  update:'30 min ago', trip:0,    driver:'Ravi Kumar',    phone:'9876543333', signal:'Active' },
-];
-
-const TRIPS_DATA = [
-  { truck:'Truck #1', truckId:'MH12X22313', from:'Pune', to:'Mumbai', eta:'4:09 PM', val:10000, date:'Truck: 8:0AM', update:'10m', driver:'Rajesh Sharma', phone:'987654210', tag:'ongoing' },
-  { truck:'Truck #2', truckId:'MH12X22314', from:'Pune', to:'Nashik', eta:'2:00 PM', val:8500,  date:'Truck: 9:0AM', update:'1hr', driver:'Suresh Singh', phone:'987654001', tag:'past' },
-  { truck:'Truck #3', truckId:'WB26X0606',  from:'Pune', to:'Surat',  eta:'6:00 PM', val:10500, date:'Truck: 7:0AM', update:'5m',  driver:'Dinesh Yadav', phone:'987654111', tag:'ongoing' },
-];
+let FLEET = [];
 
 // ── UTILS ──────────────────────────────────────────────
 function toast(msg, d=2500) {
@@ -506,10 +468,19 @@ function toast(msg, d=2500) {
 }
 
 function showScreen(id) {
+  if(window.refreshInterval){
+    clearInterval(window.refreshInterval);
+  }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-' + id).classList.add('active');
   currentScreen = id;
-  if(id === 'owner') { initOwnerMap(); renderFleet(); }
+  if(id === 'owner') {
+    initOwnerMap();
+    loadDashboardFromAPI();
+    // auto refresh every 10 sec
+    if(window.refreshInterval) clearInterval(window.refreshInterval);
+    window.refreshInterval = setInterval(loadDashboardFromAPI, 10000);
+  }
   if(id === 'trips') renderTrips();
   if(id === 'truck-detail') initTruckMap();
 }
@@ -529,28 +500,48 @@ function numpadDelete() {
 // ── ROLE & LOGIN ───────────────────────────────────────
 function setRole(r) {
   selectedRole = r;
-  document.getElementById('role-owner').className = 'role-btn ' + (r==='owner' ? 'selected-owner' : 'owner');
-  document.getElementById('role-driver').className = 'role-btn driver';
-  if(r==='driver') document.getElementById('role-driver').style.background = r==='driver' ? '#1e3a8a' : '#e8eaf0';
-  if(r==='owner') { document.getElementById('role-owner').className = 'role-btn selected-owner'; document.getElementById('role-driver').style.background='#e8eaf0'; document.getElementById('role-driver').style.color='#444'; }
+  const ownerBtn = document.getElementById('role-owner');
+  const driverBtn = document.getElementById('role-driver');
+  if(r === 'owner'){
+    ownerBtn.className = 'role-btn selected-owner';
+    driverBtn.className = 'role-btn driver';
+  } else {
+    ownerBtn.className = 'role-btn owner';
+    driverBtn.className = 'role-btn driver';
+  }
 }
 
 async function processLogin() {
-  const ph = document.getElementById('login-phone').value;
-  if(ph.length < 10) { toast('⚠️ Enter 10-digit number'); return; }
-  if(selectedRole === 'driver') { showScreen('driver'); return; }
-  // Try live API, fall back to demo
+  const ph = document.getElementById('login-phone').value.trim();
+  if(ph.length < 10){
+    toast('⚠️ Enter 10-digit number');
+    return;
+  }
+
+  localStorage.setItem("owner_phone", ph);
+
   try {
-    const res = await fetch(`${API}/dashboard`, { signal: AbortSignal.timeout(5000) });
-    const data = await res.json();
-    if(Array.isArray(data) && data.length) { /* use live data */ }
-  } catch(e) { /* use demo fleet */ }
-  showScreen('owner');
+    await fetch(`${API}/auth/otp`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ phone: ph })
+    });
+  } catch(e){}
+
+  if(selectedRole === 'driver'){
+    showScreen('driver');
+  } else {
+    showScreen('owner');
+    loadDashboardFromAPI();
+  }
 }
 
 // ── OWNER MAP ──────────────────────────────────────────
 function initOwnerMap() {
-  if(ownerMap) return;
+  if(ownerMap){
+    ownerMap.invalidateSize();
+    return;
+  }
   ownerMap = L.map('map-owner', { zoomControl:false, attributionControl:false }).setView([19.5, 76.5], 5);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png').addTo(ownerMap);
   renderMapMarkers();
@@ -558,18 +549,18 @@ function initOwnerMap() {
 
 function renderMapMarkers() {
   if(!ownerMap) return;
+  // clear old markers
+  Object.values(ownerMapMarkers).forEach(m => ownerMap.removeLayer(m));
+  ownerMapMarkers = {};
   FLEET.forEach(t => {
     const color = t.speed > 5 ? '#16a34a' : (t.signal==='Lost' ? '#ef4444' : '#f97316');
     const icon = L.divIcon({
       html: `<div style="background:${color};width:13px;height:13px;border-radius:50%;border:2.5px solid white;box-shadow:0 0 8px ${color}88"></div>`,
       className:'', iconSize:[13,13], iconAnchor:[6.5,6.5]
     });
-    if(ownerMapMarkers[t.id]) { ownerMapMarkers[t.id].setLatLng([t.lat, t.lng]); }
-    else {
-      ownerMapMarkers[t.id] = L.marker([t.lat, t.lng], { icon })
-        .addTo(ownerMap)
-        .bindPopup(`<b style="font-family:Inter,sans-serif">${t.id}</b><br><small>${t.route}<br>${t.speed} km/h</small>`);
-    }
+    ownerMapMarkers[t.id] = L.marker([t.lat, t.lng], { icon })
+      .addTo(ownerMap)
+      .bindPopup(`<b>${t.id}</b><br><small>${t.route}<br>${t.speed} km/h</small>`);
   });
 }
 
@@ -627,24 +618,6 @@ function openTruckDetail(idx) {
   document.getElementById('detail-truck-name').textContent = t.id;
   document.getElementById('detail-status-text').textContent = t.status;
   document.getElementById('detail-last-update').textContent = `· Last update: ${t.update}`;
-  const cards = document.getElementById('detail-truck-cards');
-  cards.innerHTML = `
-    <div class="detail-truck-row">
-      <div class="dtr-left">
-        <h3>${t.id}</h3>
-        <p>📍 ${t.route}</p>
-        <p class="update">Last update: ${t.update}</p>
-        ${t.status==='Idle 16 min'?'<p style="color:#f97316;font-size:12px;font-weight:700;margin-top:4px">⏱ '+t.status+'</p>':''}
-      </div>
-      <div class="dtr-right">
-        ${t.trip>0?`<div class="dtr-right"><div class="trip-val">₹${t.trip.toLocaleString('en-IN')} trip</div></div>`:''}
-        ${t.status.includes('Transit')?'<div class="eta" style="margin-top:4px">ETA: 4:09 PM</div>':''}
-        <div style="display:flex;gap:6px;margin-top:10px">
-          <button class="tc-btn" onclick="window.location.href='tel:${t.phone}'">📞 CALL</button>
-          <button class="tc-btn" onclick="window.location.href='sms:${t.phone}'">✉️ MSG</button>
-        </div>
-      </div>
-    </div>`;
   showScreen('truck-detail');
 }
 
@@ -670,13 +643,13 @@ function renderTrips() {
 
 // ── OWNER NAV ──────────────────────────────────────────
 function ownerNav(tab, el) {
-  if(tab==='dash') { /* already on owner screen */ return; }
+  if(tab==='dash') showScreen('owner');
   if(tab==='trips') showScreen('trips');
   if(tab==='insights') showScreen('insights');
 }
 function ownerNavFromTrips(tab, el) {
   if(tab==='dash') showScreen('owner');
-  if(tab==='trips') { /* already */ return; }
+  if(tab==='trips') return;
   if(tab==='insights') showScreen('insights');
 }
 
@@ -715,8 +688,15 @@ function startTrip() {
   isTracking = true;
   startTripTimer();
   startGPS();
-  // Post to backend
-  fetch(`${API}/start-trip`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({truck_id:'WB26-X0606'}) }).catch(()=>{});
+
+  fetch(`${API}/start-trip`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      truck_id:'WB26-X0606',
+      owner_phone: localStorage.getItem("owner_phone")
+    })
+  }).catch(()=>{});
 }
 
 function finishTrip() {
@@ -724,7 +704,14 @@ function finishTrip() {
   clearInterval(tripTimer);
   isTracking = false;
   toast('✅ Trip completed! Great job!');
-  setTimeout(()=>{ document.getElementById('driver-active').style.display='none'; document.getElementById('driver-waiting').style.display='block'; document.getElementById('live-speed').textContent='0'; document.getElementById('live-time').textContent='00:00'; document.getElementById('live-dist').textContent='0.0'; tripSecs=0; totalKm=0; lastLat=null; lastLng=null; },1500);
+  setTimeout(()=>{ 
+    document.getElementById('driver-active').style.display='none'; 
+    document.getElementById('driver-waiting').style.display='block'; 
+    document.getElementById('live-speed').textContent='0'; 
+    document.getElementById('live-time').textContent='00:00'; 
+    document.getElementById('live-dist').textContent='0.0'; 
+    tripSecs=0; totalKm=0; lastLat=null; lastLng=null; 
+  },1500);
 }
 
 function startTripTimer() {
@@ -739,32 +726,132 @@ function startTripTimer() {
 function startGPS() {
   const bar = document.getElementById('gps-bar');
   const txt = document.getElementById('gps-text');
-  if(!navigator.geolocation) { bar.classList.add('error'); txt.textContent='GPS: Not supported'; return; }
+
+  if(!navigator.geolocation) {
+    bar.classList.add('error');
+    txt.textContent='GPS: Not supported';
+    return;
+  }
+
   gpsWatchId = navigator.geolocation.watchPosition(
     pos => {
       const {latitude:lat, longitude:lng, speed} = pos.coords;
       const kmh = speed ? Math.round(speed*3.6) : 0;
+
       document.getElementById('live-speed').textContent = kmh;
+
       bar.classList.remove('error');
       txt.textContent = `GPS Active · ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
       if(lastLat!==null) {
         totalKm += haversine(lastLat,lastLng,lat,lng);
         document.getElementById('live-dist').textContent = totalKm.toFixed(1);
       }
-      lastLat=lat; lastLng=lng;
-      fetch(`${API}/send-location`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({truck_id:'WB26-X0606',lat,lng,speed:kmh})}).catch(()=>{});
+
+      lastLat = lat;
+      lastLng = lng;
+
+      fetch(`${API}/send-location`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          truck_id:'WB26-X0606',
+          lat,
+          lng,
+          speed: kmh,
+          owner_phone: localStorage.getItem("owner_phone")
+        })
+      }).catch(()=>{});
     },
-    err => { bar.classList.add('error'); txt.textContent='GPS: '+(err.code===1?'Permission denied':'Signal lost'); },
+    err => {
+      bar.classList.add('error');
+      txt.textContent='GPS: '+(err.code===1?'Permission denied':'Signal lost');
+    },
     {enableHighAccuracy:true,timeout:10000,maximumAge:3000}
   );
 }
 
-function haversine(la1,lo1,la2,lo2){ const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+function haversine(la1,lo1,la2,lo2){ 
+  const R=6371,dL=(la2-la1)*Math.PI/180,dO=(lo2-lo1)*Math.PI/180,a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dO/2)**2; 
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); 
+}
 
 function callOwner() { window.location.href='tel:9874076688'; }
 function sendSOS() {
-  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{ window.open(`https://wa.me/919874076688?text=${encodeURIComponent(`🚨 SOS! Driver needs help. Location: https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`)}`); });
+  if(navigator.geolocation) navigator.geolocation.getCurrentPosition(p=>{ 
+    window.open(`https://wa.me/919874076688?text=${encodeURIComponent(`🚨 SOS! Driver needs help. Location: https://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`)}`); 
+  });
   else window.open(`https://wa.me/919874076688?text=${encodeURIComponent('🚨 SOS from Driver!')}`);
+}
+
+// ── REAL DASHBOARD FROM API ────────────────────────────
+async function loadDashboardFromAPI(){
+  try{
+    const phone = localStorage.getItem("owner_phone");
+    const res = await fetch(`${API}/dashboard?phone=${phone}`);
+    const data = await res.json();
+    if(!data || !data.length){
+      // do NOT spam toast repeatedly
+      if(!window.noDataShown){
+        toast("Waiting for live truck data...");
+        window.noDataShown = true;
+      }
+      return;
+    }
+    FLEET.length = 0;
+    data.forEach((t,i)=>{
+      FLEET.push({
+        id: "Truck #"+(i+1),
+        truck: t.truck_id,
+        lat: t.lat || 20,
+        lng: t.lng || 75,
+        speed: t.speed || 0,
+        status: t.status || "Unknown",
+        route: "Live tracking",
+        update: "Just now",
+        trip: 0,
+        driver: "Driver",
+        phone: "0000000000",
+        signal: t.signal || "Active"
+      });
+    });
+    renderFleet();
+    renderMapMarkers();
+  }catch(e){
+    console.log("Dashboard error");
+    toast("Waiting for live truck data...");
+  }
+}
+
+// ── AI INSIGHTS ────────────────────────────────────────
+async function runAIInsights(){
+  if(!FLEET.length){
+    toast("No data yet. Start trip first.");
+    return;
+  }
+  try{
+    const res = await fetch(`${API}/generate-deep-report`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        truck_id: (FLEET.length ? FLEET[0].truck : "WB26-X0606"),
+        days:3
+      })
+    });
+    const data = await res.json();
+    const container = document.querySelector('.insights-section');
+    const div = document.createElement("div");
+    div.style.background="#fff";
+    div.style.border="1px solid #eee";
+    div.style.borderRadius="12px";
+    div.style.padding="12px";
+    div.style.marginTop="10px";
+    div.style.fontSize="13px";
+    div.innerHTML = "🧠 <b>AI Insight</b><br><br>" + (data.insight || "No insight available").replace(/\n/g,"<br>");
+    container.prepend(div);
+  }catch(e){
+    toast("AI failed - Backend may be offline");
+  }
 }
 
 // Init
