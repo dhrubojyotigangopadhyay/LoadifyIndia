@@ -1,97 +1,113 @@
-let selectedRole = null;
-let activeTruckId = null;
 const API = "https://loadifyindia.onrender.com";
-let map, isTracking = false;
+let selectedRole = 'owner';
+let mapInstance = null;
+let isTracking = false;
 
-function setRole(role) {
-    selectedRole = role;
-    document.getElementById('selected-role-text').innerText = "Role Selected: " + role.toUpperCase();
+// 1. GATEWAY & NAVIGATION
+function setRole(r) {
+    selectedRole = r;
+    document.getElementById('role-owner').className = r === 'owner' ? "flex-1 p-4 rounded-xl border-2 font-bold bg-blue-800 text-white border-blue-800" : "flex-1 p-4 rounded-xl border-2 font-bold bg-gray-50 text-gray-500 border-gray-200";
+    document.getElementById('role-driver').className = r === 'driver' ? "flex-1 p-4 rounded-xl border-2 font-bold bg-blue-800 text-white border-blue-800" : "flex-1 p-4 rounded-xl border-2 font-bold bg-gray-50 text-gray-500 border-gray-200";
 }
 
-function appLogin() {
+async function processLogin() {
     const phone = document.getElementById('login-phone').value;
-    if (!phone || !selectedRole) return alert("Select Role and Put Number");
+    if (!phone) return alert("Enter Mobile Number");
 
-    if (selectedRole === 'owner' && phone === "9874076688") {
-        document.getElementById('gateway').classList.add('hidden');
-        document.getElementById('owner-view').classList.remove('hidden');
-        initOwner();
-    } else if (selectedRole === 'driver') {
-        document.getElementById('gateway').classList.add('hidden');
-        document.getElementById('driver-view').classList.remove('hidden');
+    if (selectedRole === 'driver') {
+        showScreen('driver');
     } else {
-        alert("Access Denied");
+        try {
+            const res = await fetch(`${API}/dashboard`);
+            const data = await res.json();
+            if (data.length === 0) showScreen('onboarding');
+            else { showScreen('owner'); initOwnerMap(); }
+        } catch (e) { showScreen('onboarding'); }
     }
 }
 
-function initOwner() {
-    map = L.map('map').setView([22.5, 88.3], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    setInterval(updateDashboard, 5000);
-    updateDashboard();
+function showScreen(id) {
+    const screens = ['screen-login', 'screen-owner', 'screen-driver', 'screen-onboarding'];
+    screens.forEach(s => document.getElementById(s).style.display = 'none');
+    document.getElementById('screen-' + id).style.display = 'flex';
+    if(id === 'screen-driver' || id === 'screen-onboarding') document.getElementById('screen-' + id).style.flexDirection = 'column';
 }
 
-async function updateDashboard() {
+// 2. PILOT ONBOARDING
+function sendWhatsAppInvite() {
+    const truck = document.getElementById('new-truck-id').value;
+    const pPhone = document.getElementById('new-pilot-phone').value;
+    if(!truck || !pPhone) return alert("Fill Truck No and Pilot Mobile");
+    const msg = `Loadify India: You are assigned as the Pilot for Truck ${truck}. Install app: ${window.location.href}`;
+    window.open(`https://wa.me/91${pPhone}?text=${encodeURIComponent(msg)}`);
+}
+
+function saveAndGoToDash() {
+    alert("Pilot Registered Successfully!");
+    showScreen('owner');
+    initOwnerMap();
+}
+
+// 3. OWNER DASHBOARD
+function initOwnerMap() {
+    if(!mapInstance) {
+        mapInstance = L.map('map-mobile', {zoomControl: false}).setView([22.5, 88.3], 6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png').addTo(mapInstance);
+    }
+    refreshFleet();
+    setInterval(refreshFleet, 10000);
+}
+
+async function refreshFleet() {
     const res = await fetch(`${API}/dashboard`);
     const data = await res.json();
-    const list = document.getElementById('fleet-list');
-    list.innerHTML = '';
+    const container = document.getElementById('truck-cards-container');
+    container.innerHTML = '';
+    
     data.forEach(t => {
-        const div = document.createElement('div');
-        div.style = "padding:10px; border-bottom:1px solid #ccc; cursor:pointer;";
-        div.innerText = t.truck_id + " (" + t.status + ")";
-        div.onclick = () => {
-            activeTruckId = t.truck_id;
-            document.getElementById('live-speed').innerText = t.speed + " KM/H";
-            document.getElementById('live-signal').innerText = t.signal;
-            document.getElementById('live-time').innerText = new Date(t.timestamp).toLocaleTimeString();
-            map.setView([t.lat, t.lng], 12);
-            // Simple Graph bars
-            const g = document.getElementById('graph-bars');
-            g.innerHTML = '';
-            for(let i=0; i<15; i++) {
-                g.innerHTML += `<div style="flex:1; background:blue; height:${Math.random()*100}px"></div>`;
-            }
-        };
-        list.appendChild(div);
+        container.innerHTML += `
+            <div class="bg-white p-5 rounded-[30px] border shadow-sm mb-4" onclick="focusTruck(${t.lat}, ${t.lng})">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-black text-xl text-blue-900">${t.truck_id}</h4>
+                        <p class="text-xs font-bold ${t.status === 'Moving' ? 'text-green-600' : 'text-red-600'}">● ${t.status}</p>
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="location.href='tel:9874076688'" class="bg-gray-100 p-3 rounded-2xl font-bold text-xs">📞 CALL</button>
+                        <button onclick="location.href='sms:9874076688'" class="bg-gray-100 p-3 rounded-2xl font-bold text-xs">✉️ MSG</button>
+                    </div>
+                </div>
+                <div class="flex justify-between text-sm mt-4 font-bold text-gray-400">
+                    <span>📍 Speed: ${t.speed} KM/H</span>
+                    <span class="text-blue-900 text-lg">₹12,000 trip</span>
+                </div>
+            </div>`;
     });
 }
 
-async function triggerDeepAudit() {
-    if (!activeTruckId) return alert("Select a truck from the list");
-    const days = document.getElementById('audit-range').value;
-    const output = document.getElementById('ai-output');
-    output.innerText = "AI Brain is calculating for " + days + " days...";
+function focusTruck(lat, lng) { mapInstance.setView([lat, lng], 14); }
 
-    const res = await fetch(`${API}/generate-deep-report`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ truck_id: activeTruckId, days: parseInt(days) })
-    });
-    const data = await res.json();
-    output.innerText = data.insight;
-}
-
-function handleTrip() {
-    const btn = document.getElementById('trip-btn');
+// 4. PILOT TRACKING
+function toggleTrip() {
+    const btn = document.getElementById('main-trip-btn');
     isTracking = !isTracking;
     if (isTracking) {
-        btn.innerText = "STOP TRIP";
-        btn.style.background = "red";
-        document.getElementById('gps-status').innerText = "GPS: STREAMING";
-        navigator.geolocation.watchPosition(pos => {
-            fetch(`${API}/send-location`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    truck_id: "WB26-X0606",
-                    lat: pos.coords.latitude,
-                    lng: pos.coords.longitude,
-                    speed: pos.coords.speed || 0
-                })
-            });
+        btn.innerText = "FINISH TRIP";
+        btn.classList.replace('bg-blue-800', 'bg-red-600');
+        startGpsStream();
+    } else { location.reload(); }
+}
+
+function startGpsStream() {
+    navigator.geolocation.watchPosition(pos => {
+        fetch(`${API}/send-location`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                truck_id: "WB26-X0606",
+                lat: pos.coords.latitude, lng: pos.coords.longitude,
+                speed: pos.coords.speed || 0
+            })
         });
-    } else {
-        location.reload();
-    }
+    }, null, { enableHighAccuracy: true });
 }
