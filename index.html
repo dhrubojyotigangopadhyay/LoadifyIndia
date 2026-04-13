@@ -1,138 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>LOADIFY FINAL FIX</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loadify India | Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <style>
-        body { font-family: sans-serif; margin: 20px; background: #f0f0f0; }
-        section { background: white; padding: 20px; border: 2px solid #000; margin-bottom: 20px; }
-        button { padding: 15px; cursor: pointer; font-weight: bold; margin: 5px; }
-        .active { background: #4CAF50; color: white; }
-        #map { height: 300px; width: 100%; background: #ccc; margin-top: 10px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-    </style>
 </head>
-<body>
+<body class="bg-gray-50 font-sans">
 
-    <h1>LOADIFY INDIA CONTROL</h1>
-
-    <section id="login-sec">
-        <h3>1. LOGIN</h3>
-        <input type="tel" id="num" placeholder="Mobile Number" style="padding:10px; width:200px;"><br><br>
-        <button id="btn-o" onclick="choose('owner')">I AM OWNER</button>
-        <button id="btn-d" onclick="choose('driver')">I AM DRIVER</button>
-        <br><br>
-        <button onclick="enter()" style="background:blue; color:white; width:220px;">ACCESS SYSTEM</button>
-    </section>
-
-    <section id="owner-sec" style="display:none;">
-        <h3>OWNER DASHBOARD</h3>
-        <div style="display:flex; gap:10px;">
-            <div style="width:200px; border-right:1px solid #000;">
-                <b>TRUCK LIST</b>
-                <div id="list"></div>
+    <div id="screen-login" class="min-h-screen flex flex-col items-center justify-center px-6">
+        <h1 class="text-3xl font-bold mb-2">Login</h1>
+        <p class="text-gray-500 mb-8">Enter your mobile number</p>
+        
+        <div class="w-full max-w-sm space-y-4">
+            <div class="flex items-center border rounded-lg p-3 bg-white">
+                <span class="text-gray-400 mr-2">+91</span>
+                <input type="tel" id="login-phone" class="w-full outline-none text-lg" placeholder="9876543210">
             </div>
-            <div style="flex:1;">
-                <div id="map"></div>
-                <table>
-                    <tr>
-                        <td>SPEED: <b id="sp">0</b></td>
-                        <td>SIGNAL: <b id="sg">--</b></td>
-                    </tr>
-                </table>
-                <hr>
-                <b>AI REPORT (0-30 DAYS)</b><br>
-                <select id="days"><option value="7">7 Days</option><option value="30">30 Days</option></select>
-                <button onclick="runAI()">GENERATE AI VERDICT</button>
-                <p id="ai-out" style="color:green; font-size:12px;"></p>
-            </div>
+            
+            <button onclick="setRole('owner')" id="role-owner" class="w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100 transition-all">I AM OWNER</button>
+            <button onclick="setRole('driver')" id="role-driver" class="w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg transition-all">I AM DRIVER</button>
+            
+            <button onclick="processLogin()" class="w-full py-4 text-blue-800 font-bold border-t mt-4">Log in</button>
         </div>
-    </section>
+    </div>
 
-    <section id="driver-sec" style="display:none; text-align:center;">
-        <h3>DRIVER CONSOLE</h3>
-        <h2 id="tr-id">WB26-X0606</h2>
-        <button id="go" onclick="trip()" style="width:200px; height:200px; border-radius:50%; font-size:20px; background:green; color:white;">START TRIP</button>
-    </section>
+    <div id="screen-owner" class="hidden flex flex-col h-screen">
+        <header class="bg-white p-4 flex justify-between items-center border-b">
+            <h2 class="text-xl font-bold">LOADIFY INDIA CONTROL</h2>
+            <div class="flex space-x-2 text-gray-400"><span>🔔</span><span>⚙️</span></div>
+        </header>
+
+        <main class="flex-1 overflow-y-auto p-4 space-y-4">
+            <div class="flex justify-between text-sm font-semibold text-gray-600">
+                <span>5 Trucks</span> <span class="text-green-600">3 Running</span> <span>₹18,200 Today</span>
+            </div>
+
+            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100 text-sm">
+                <p class="font-bold text-blue-900">Alerts (2)</p>
+                <p class="text-blue-700">• Truck #2 → No signal (2 hrs)</p>
+            </div>
+
+            <div id="map-mobile" class="h-48 rounded-xl overflow-hidden shadow-inner"></div>
+
+            <div id="truck-cards-container" class="space-y-4">
+                </div>
+        </main>
+
+        <nav class="bg-white border-t flex justify-around p-3 text-xs text-gray-400">
+            <div class="text-blue-800 font-bold text-center">📊<br>Dashboard</div>
+            <div class="text-center">🚚<br>Trips</div>
+            <div class="text-center">📈<br>Insights</div>
+        </nav>
+    </div>
+
+    <div id="screen-driver" class="hidden min-h-screen bg-gray-50 flex flex-col">
+        <header class="p-4 text-center font-bold border-b bg-white">LOADIFY DRIVER</header>
+        <div class="p-6 space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border text-center">
+                <p class="text-gray-400">Trip Assigned</p>
+                <h3 class="text-xl font-bold my-2">📍 Pune → Mumbai</h3>
+                <p class="text-green-600 font-bold">₹12,000</p>
+                <p class="text-sm text-gray-500">Pickup: Today</p>
+            </div>
+            <button id="btn-start-trip" onclick="toggleTrip()" class="w-full bg-blue-800 text-white py-5 rounded-xl font-bold text-lg shadow-xl">START TRIP</button>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        let role = "";
-        let tid = "";
+        let selectedRole = 'driver'; 
         const API = "https://loadifyindia.onrender.com";
 
-        // CHOOSE ROLE
-        function choose(r) {
-            role = r;
-            document.getElementById('btn-o').className = (r=='owner') ? 'active' : '';
-            document.getElementById('btn-d').className = (r=='driver') ? 'active' : '';
+        function setRole(r) {
+            selectedRole = r;
+            document.getElementById('role-owner').className = r === 'owner' ? "w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg" : "w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100";
+            document.getElementById('role-driver').className = r === 'driver' ? "w-full p-4 rounded-lg border-2 text-white font-semibold bg-blue-800 shadow-lg" : "w-full p-4 rounded-lg border-2 text-gray-600 font-semibold bg-gray-100";
         }
 
-        // LOGIN LOGIC
-        function enter() {
-            const p = document.getElementById('num').value;
-            if(!p || !role) { alert("Type Number and Pick Role!"); return; }
-
-            if(role == 'owner' && p == "9874076688") {
-                document.getElementById('login-sec').style.display = 'none';
-                document.getElementById('owner-sec').style.display = 'block';
-                loadFleet();
-            } else if(role == 'driver') {
-                document.getElementById('login-sec').style.display = 'none';
-                document.getElementById('driver-sec').style.display = 'block';
+        function processLogin() {
+            const phone = document.getElementById('login-phone').value;
+            document.getElementById('screen-login').classList.add('hidden');
+            if (selectedRole === 'owner') {
+                document.getElementById('screen-owner').classList.remove('hidden');
+                initOwner();
             } else {
-                alert("Wrong Number for Owner");
+                document.getElementById('screen-driver').classList.remove('hidden');
             }
         }
 
-        // OWNER: LOAD DATA
-        async function loadFleet() {
+        function initOwner() {
+            const map = L.map('map-mobile').setView([18.5204, 73.8567], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+            refreshFleet();
+        }
+
+        async function refreshFleet() {
             const res = await fetch(API + "/dashboard");
             const data = await res.json();
-            const div = document.getElementById('list');
-            div.innerHTML = "";
+            const container = document.getElementById('truck-cards-container');
+            container.innerHTML = '';
             data.forEach(t => {
-                let b = document.createElement('button');
-                b.innerText = t.truck_id;
-                b.style.width = "100%";
-                b.onclick = () => {
-                    tid = t.truck_id;
-                    document.getElementById('sp').innerText = t.speed + " KM/H";
-                    document.getElementById('sg').innerText = t.signal;
-                    // Note: Map init would go here but keeping it basic to avoid crashes
-                    alert("Selected: " + tid);
-                };
-                div.appendChild(b);
+                container.innerHTML += `
+                    <div class="bg-white p-4 rounded-xl border shadow-sm">
+                        <div class="flex justify-between items-start mb-2">
+                            <div>
+                                <h4 class="font-bold text-lg">${t.truck_id}</h4>
+                                <p class="text-xs text-green-600">● In Transit</p>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button class="text-xs bg-gray-100 px-3 py-1 rounded">📞 CALL</button>
+                                <button class="text-xs bg-gray-100 px-3 py-1 rounded">✉️ MSG</button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-sm text-gray-500">
+                            <span>📍 Current: Mumbai</span>
+                            <span class="font-bold text-black">₹12,000 trip</span>
+                        </div>
+                    </div>
+                `;
             });
-        }
-
-        // OWNER: AI
-        async function runAI() {
-            if(!tid) return alert("Pick truck first");
-            const d = document.getElementById('days').value;
-            document.getElementById('ai-out').innerText = "AI is thinking...";
-            const res = await fetch(API + "/generate-deep-report", {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ truck_id: tid, days: parseInt(d) })
-            });
-            const out = await res.json();
-            document.getElementById('ai-out').innerText = out.insight;
-        }
-
-        // DRIVER: TRIP
-        let active = false;
-        function trip() {
-            active = !active;
-            const b = document.getElementById('go');
-            if(active) {
-                b.innerText = "STOP TRIP";
-                b.style.background = "red";
-                // GPS Push Logic here
-            } else {
-                location.reload();
-            }
         }
     </script>
 </body>
