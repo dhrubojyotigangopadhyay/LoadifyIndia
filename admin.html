@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loadify Admin | BRIN Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-[#f4f7fa] flex h-screen overflow-hidden">
+
+    <aside class="w-64 bg-[#1e293b] text-white flex flex-col p-6 space-y-8">
+        <h1 class="text-2xl font-black text-blue-400">Loadify India</h1>
+        <nav class="space-y-4 flex-1">
+            <div class="bg-blue-600 p-2 rounded cursor-pointer">📊 Dashboard</div>
+            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">👥 Owners</div>
+            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">💳 Billing</div>
+            <div class="hover:bg-slate-700 p-2 rounded cursor-pointer">⚙️ Settings</div>
+        </nav>
+    </aside>
+
+    <main class="flex-1 flex flex-col overflow-y-auto">
+        <header class="bg-white p-4 shadow-sm flex justify-between items-center px-10">
+            <h2 class="text-xl font-bold">Admin Dashboard</h2>
+            <div class="flex items-center space-x-4">
+                <input type="text" placeholder="Search Owners..." class="border p-2 rounded-lg text-sm w-64">
+                <div class="w-10 h-10 rounded-full bg-blue-100"></div>
+            </div>
+        </header>
+
+        <section class="p-10 space-y-8">
+            <div class="grid grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-blue-500">
+                    <p class="text-gray-400 text-sm">Total Owners</p>
+                    <h3 class="text-3xl font-bold">110</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-green-500">
+                    <p class="text-gray-400 text-sm">Paying Owners</p>
+                    <h3 class="text-3xl font-bold">76</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-yellow-500">
+                    <p class="text-gray-400 text-sm">Monthly Revenue</p>
+                    <h3 class="text-3xl font-bold text-blue-700">₹2,34,560</h3>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border-b-4 border-red-500">
+                    <p class="text-gray-400 text-sm">On Free Trial</p>
+                    <h3 class="text-3xl font-bold">34</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h4 class="font-bold mb-4">Monthly Revenue</h4>
+                    <canvas id="revenueChart" height="200"></canvas>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm">
+                    <h4 class="font-bold mb-4">Top Owners</h4>
+                    <table class="w-full text-left text-sm">
+                        <tr class="border-b text-gray-400">
+                            <th class="py-2">Owner Name</th>
+                            <th>Trips</th>
+                            <th>Revenue</th>
+                        </tr>
+                        <tr class="border-b"><td class="py-3 font-semibold">Patrick Trucks</td><td>45</td><td>₹2,000</td></tr>
+                        <tr class="border-b"><td class="py-3 font-semibold">Rajesh Sharma</td><td>38</td><td>₹1,800</td></tr>
+                        <tr class="border-b"><td class="py-3 font-semibold">Manish Trivedi</td><td>32</td><td>₹1,500</td></tr>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Revenue',
+                    data: [12000, 19000, 15000, 25000, 22000, 30000],
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 5
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
